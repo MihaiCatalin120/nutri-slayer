@@ -21,6 +21,7 @@
     "npm:tailwindcss@4": "4.1.11",
     "npm:typescript-eslint@^8.20.0": "8.35.1_eslint@9.30.1_typescript@5.8.3_@typescript-eslint+parser@8.35.1__eslint@9.30.1__typescript@5.8.3",
     "npm:typescript@5": "5.8.3",
+    "npm:vite-plugin-devtools-json@0.2": "0.2.1_vite@6.3.5__picomatch@4.0.2",
     "npm:vite@^6.2.6": "6.3.5_picomatch@4.0.2"
   },
   "npm": {
@@ -1640,6 +1641,17 @@
     "util-deprecate@1.0.2": {
       "integrity": "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw=="
     },
+    "uuid@11.1.0": {
+      "integrity": "sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==",
+      "bin": true
+    },
+    "vite-plugin-devtools-json@0.2.1_vite@6.3.5__picomatch@4.0.2": {
+      "integrity": "sha512-5aiNvf/iLTuLR1dUqoI5CLLGgeK2hd6u+tA+RIp7GUZDyAcM6ECaUEWOOtGpidbcxbkKq++KtmSqA3jhMbPwMA==",
+      "dependencies": [
+        "uuid",
+        "vite"
+      ]
+    },
     "vite@6.3.5_picomatch@4.0.2": {
       "integrity": "sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==",
       "dependencies": [
@@ -1710,6 +1722,7 @@
         "npm:tailwindcss@4",
         "npm:typescript-eslint@^8.20.0",
         "npm:typescript@5",
+        "npm:vite-plugin-devtools-json@0.2",
         "npm:vite@^6.2.6"
       ]
     }

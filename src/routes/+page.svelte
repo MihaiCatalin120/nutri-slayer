@@ -1,2 +1,11 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<script lang="ts">
+	import GameGrid from '$lib/components/GameGrid.svelte';
+</script>
+
+<div class="flex h-full w-full flex-col gap-2 p-3">
+	<div class="h-1/4 w-full rounded-md border-white bg-black"></div>
+	<div class="flex h-3/4 w-full rounded-md border-black bg-white">
+		<GameGrid />
+		<!-- <TooltipBar /> -->
+	</div>
+</div>
