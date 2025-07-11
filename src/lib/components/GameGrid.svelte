@@ -3,28 +3,31 @@
 
 	const blockStyle = ' border cursor-pointer';
 
-	let blocks: Array<GameBlock> = [
-		{
-			name: 'Protein',
-			style: 'bg-red-500' + blockStyle,
-			id: 1
-		},
-		{
-			name: 'Fat',
-			style: 'bg-yellow-500' + blockStyle,
-			id: 2
-		},
-		{
-			name: 'Carbohydrate',
-			style: 'bg-yellow-900' + blockStyle,
-			id: 3
-		},
-		{
-			name: 'Air',
-			style: 'bg-white',
-			id: 0
-		}
-	];
+	const protein = {
+		name: 'Protein',
+		style: 'bg-red-500' + blockStyle,
+		id: 1
+	};
+
+	const fat = {
+		name: 'Fat',
+		style: 'bg-yellow-500' + blockStyle,
+		id: 2
+	};
+
+	const carbohydrate = {
+		name: 'Carbohydrate',
+		style: 'bg-yellow-900' + blockStyle,
+		id: 3
+	};
+
+	const air = {
+		name: 'Air',
+		style: 'bg-white',
+		id: 0
+	};
+
+	let blocks: Array<GameBlock> = [protein, fat, carbohydrate, air];
 
 	let isAnimating = $state(false);
 	let GRID_WIDTH = 10;
@@ -35,6 +38,8 @@
 			Array.from({ length: GRID_WIDTH }, () => blocks[Math.floor(Math.random() * blocks.length)])
 		)
 	);
+
+	applyGravity();
 
 	function onBlockClick(row: number, column: number, blockID: number) {
 		if (isAnimating) return;
@@ -58,9 +63,9 @@
 
 		if (visited.has(key)) return [];
 		if (row < 0 || row >= GRID_HEIGHT || column < 0 || column >= GRID_WIDTH) return [];
-		if (blockID !== grid[row][column].id) return [];
 
 		visited.add(key);
+		if (blockID !== grid[row][column].id) return [];
 		let group = [{ row, column }];
 		const directions = [
 			[-1, 0],
@@ -79,37 +84,47 @@
 	}
 
 	function popGroup(group: Array<{ row: number; column: number }>) {
-		const airBlock = blocks.find((block) => block.id === 0);
-
-		if (!airBlock) {
-			console.error('Air block was not found');
-			return;
-		}
-
 		isAnimating = true;
 
 		group.forEach((element) => {
 			const domElement = document.getElementById(`cell-${element.row}-${element.column}`);
 			domElement?.classList.add('animate-pop');
+
+			setTimeout(() => {
+				grid[element.row][element.column] = air;
+			}, 500);
 		});
 
 		setTimeout(() => {
-			group.forEach((element) => {
-				grid[element.row][element.column] = airBlock;
-			});
+			applyGravity();
 			isAnimating = false;
 		}, 500);
+	}
+
+	function applyGravity() {
+		for (let i = 0; i < GRID_WIDTH; i++) {
+			let columnColors = [];
+
+			// collect non-air blocks
+			for (let j = 0; j < GRID_HEIGHT; j++) {
+				if (grid[j][i].id !== air.id) columnColors.push(grid[j][i]);
+				grid[j][i] = air;
+			}
+
+			// fill columns back
+			for (let j = GRID_HEIGHT - 1; j > 0; j--) {
+				grid[j][i] = columnColors.pop() || air;
+			}
+		}
 	}
 </script>
 
 <div class="grid aspect-10/8 h-full grid-cols-10 grid-rows-8 gap-1 p-1">
 	{#each grid as column, rowIndex (rowIndex)}
-		{#each column as cell, columnIndex (`cell-${columnIndex}-${cell.id}`)}
+		{#each column as cell, columnIndex (`cell-${rowIndex}-${columnIndex}-${cell.id}`)}
 			<button
 				id="cell-{rowIndex}-{columnIndex}"
 				aria-label={cell.name}
-				data-row={rowIndex}
-				data-column={columnIndex}
 				class="{cell.style} h-full w-full rounded-md transition hover:scale-[1.1]"
 				onclick={() => onBlockClick(rowIndex, columnIndex, cell.id)}
 			></button>
