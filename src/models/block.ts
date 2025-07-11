@@ -1,5 +1,5 @@
 export type GameBlock = {
-  color: string,
+  style: string,
   id: number,
   name: string,
 }

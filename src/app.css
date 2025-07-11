@@ -11,3 +11,14 @@ body {
   height: 100%;
   width: 100%;
 }
+
+.animate-pop {
+  animation: pop 200ms ease-in forwards;
+}
+
+@keyframes pop {
+  to {
+    opacity: 0;
+    scale: 1.2;
+  }
+}
