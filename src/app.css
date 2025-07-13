@@ -16,9 +16,19 @@ body {
   animation: pop 200ms ease-in forwards;
 }
 
+.animate-fall {
+  animation: fall 0.6s ease-out forwards;
+}
+
 @keyframes pop {
   to {
     opacity: 0;
     scale: 1.2;
+  }
+}
+
+@keyframes fall {
+  to {
+    translate: 0 var(--fall-distance);
   }
 }

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { type GameBlock } from '../../models/block';
+	import { onMount } from 'svelte';
 
 	const blockStyle = ' border cursor-pointer';
 
@@ -38,11 +39,14 @@
 			Array.from({ length: GRID_WIDTH }, () => blocks[Math.floor(Math.random() * blocks.length)])
 		)
 	);
-
-	applyGravity();
+	let cellElements: Record<string, HTMLButtonElement> = $state({});
+	onMount(() => {
+		applyGravity();
+	});
 
 	function onBlockClick(row: number, column: number, blockID: number) {
 		if (isAnimating) return;
+		if (blockID === air.id) return;
 
 		let visited: Set<string> = new Set<string>();
 
@@ -87,8 +91,8 @@
 		isAnimating = true;
 
 		group.forEach((element) => {
-			const domElement = document.getElementById(`cell-${element.row}-${element.column}`);
-			domElement?.classList.add('animate-pop');
+			const domBlock = cellElements[`cell-${element.row}-${element.column}`];
+			domBlock?.classList.add('animate-pop');
 
 			setTimeout(() => {
 				grid[element.row][element.column] = air;
@@ -96,26 +100,75 @@
 		});
 
 		setTimeout(() => {
-			applyGravity();
-			isAnimating = false;
+			applyGravity().then(() => {
+				// TODO: add scores and moves
+				//
+				isAnimating = false;
+			});
 		}, 500);
 	}
 
-	function applyGravity() {
-		for (let i = 0; i < GRID_WIDTH; i++) {
-			let columnColors = [];
+	function applyGravity(): Promise<void> {
+		return new Promise((resolve) => {
+			let animationPromises: Promise<void>[] = [];
 
-			// collect non-air blocks
-			for (let j = 0; j < GRID_HEIGHT; j++) {
-				if (grid[j][i].id !== air.id) columnColors.push(grid[j][i]);
-				grid[j][i] = air;
+			for (let column = 0; column < GRID_WIDTH; column++) {
+				let fallingBlocks = [];
+				let targetRow = GRID_HEIGHT - 1;
+
+				// collect non-air blocks
+				for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
+					if (grid[row][column].id !== air.id) {
+						if (row !== targetRow) {
+							fallingBlocks.push({
+								from: row,
+								to: targetRow,
+								element: grid[row][column]
+							});
+						}
+						targetRow--;
+					}
+				}
+
+				// animate falling blocks
+				fallingBlocks.forEach((block) => {
+					if (block.element.id !== air.id) {
+						const fallDistance = (block.to - block.from) * 84; // block height + gap
+						cellElements[`cell-${block.from}-${column}`].style.setProperty(
+							'--fall-distance',
+							`${fallDistance}px`
+						);
+						cellElements[`cell-${block.from}-${column}`].classList.add('animate-fall');
+
+						const promise: Promise<void> = new Promise((resolve) => {
+							setTimeout(() => {
+								cellElements[`cell-${block.from}-${column}`].classList.remove('animate-fall');
+
+								resolve();
+							}, 600);
+						});
+						animationPromises.push(promise);
+					}
+				});
 			}
 
-			// fill columns back
-			for (let j = GRID_HEIGHT - 1; j > 0; j--) {
-				grid[j][i] = columnColors.pop() || air;
-			}
-		}
+			Promise.all(animationPromises).then(() => {
+				for (let column = 0; column < GRID_WIDTH; column++) {
+					let columnBlocks: GameBlock[] = [];
+
+					for (let row = 0; row < GRID_HEIGHT; row++) {
+						if (grid[row][column].id !== air.id) columnBlocks.push(grid[row][column]);
+						grid[row][column] = air;
+					}
+
+					for (let row = GRID_HEIGHT - 1; row > 0; row--) {
+						grid[row][column] = columnBlocks.pop() || air;
+					}
+				}
+
+				resolve();
+			});
+		});
 	}
 </script>
 
@@ -124,6 +177,7 @@
 		{#each column as cell, columnIndex (`cell-${rowIndex}-${columnIndex}-${cell.id}`)}
 			<button
 				id="cell-{rowIndex}-{columnIndex}"
+				bind:this={cellElements[`cell-${rowIndex}-${columnIndex}`]}
 				aria-label={cell.name}
 				class="{cell.style} h-full w-full rounded-md transition hover:scale-[1.1]"
 				onclick={() => onBlockClick(rowIndex, columnIndex, cell.id)}
