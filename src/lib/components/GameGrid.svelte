@@ -70,6 +70,17 @@
 	function popGroup(group: Array<{ row: number; column: number }>) {
 		isAnimating = true;
 
+		gameState.nextAttackDamage = 0;
+
+		group.forEach((cell) => {
+			if (!grid) return;
+
+			gameState.nextAttackDamage += grid[cell.row][cell.column].baseDamage;
+			gameState.nextAttackDamage *= grid[cell.row][cell.column].damageMultiplier;
+		});
+
+		gameState.nextAttackDamage = Math.round(gameState.nextAttackDamage);
+
 		group.forEach((element) => {
 			const domBlock = cellElements[`cell-${element.row}-${element.column}`];
 			domBlock?.classList.add('animate-pop');
@@ -81,8 +92,6 @@
 
 		setTimeout(() => {
 			applyGravity().then(() => {
-				// TODO: add scores and moves
-				//
 				isAnimating = false;
 			});
 		}, 200);
