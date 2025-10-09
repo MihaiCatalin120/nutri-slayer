@@ -17,7 +17,7 @@ body {
 }
 
 .animate-fall {
-  animation: fall 0.6s ease-out forwards;
+  animation: fall 0.6s ease-in forwards;
 }
 
 @keyframes pop {

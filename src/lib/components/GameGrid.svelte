@@ -7,18 +7,20 @@
 	let isAnimating = $state(false);
 	let GRID_WIDTH = 10;
 	let GRID_HEIGHT = 8;
+	let grid: GameBlock[][] | null = $state(null);
 
-	let grid = $state(
-		Array.from({ length: GRID_HEIGHT }, () =>
+	let cellElements: Record<string, HTMLButtonElement> = $state({});
+	onMount(() => {
+		grid = Array.from({ length: GRID_HEIGHT }, () =>
 			Array.from(
 				{ length: GRID_WIDTH },
 				() => blocks.all[Math.floor(Math.random() * blocks.all.length)]
 			)
-		)
-	);
-	let cellElements: Record<string, HTMLButtonElement> = $state({});
-	onMount(() => {
-		applyGravity();
+		);
+
+		setTimeout(() => {
+			applyGravity();
+		}, 200);
 	});
 
 	function onBlockClick(row: number, column: number, blockID: number) {
@@ -40,6 +42,7 @@
 		blockID: number,
 		visited: Set<string>
 	): Array<{ row: number; column: number }> {
+		if (!grid) return [];
 		const key = `${row}${column}`;
 
 		if (visited.has(key)) return [];
@@ -72,8 +75,8 @@
 			domBlock?.classList.add('animate-pop');
 
 			setTimeout(() => {
-				grid[element.row][element.column] = blocks.air;
-			}, 500);
+				if (grid) grid[element.row][element.column] = blocks.air;
+			}, 200);
 		});
 
 		setTimeout(() => {
@@ -82,7 +85,7 @@
 				//
 				isAnimating = false;
 			});
-		}, 500);
+		}, 200);
 	}
 
 	function applyGravity(): Promise<void> {
@@ -95,7 +98,7 @@
 
 				// collect non-air blocks
 				for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
-					if (grid[row][column].id !== blocks.air.id) {
+					if (grid && grid[row][column].id !== blocks.air.id) {
 						if (row !== targetRow) {
 							fallingBlocks.push({
 								from: row,
@@ -134,11 +137,13 @@
 					let columnBlocks: GameBlock[] = [];
 
 					for (let row = 0; row < GRID_HEIGHT; row++) {
+						if (!grid) break; // There has to be a better way of dealing with this
 						if (grid[row][column].id !== blocks.air.id) columnBlocks.push(grid[row][column]);
 						grid[row][column] = blocks.air;
 					}
 
-					for (let row = GRID_HEIGHT - 1; row > 0; row--) {
+					for (let row = GRID_HEIGHT - 1; row >= 0; row--) {
+						if (!grid) break; // Here too, see upper comment
 						grid[row][column] = columnBlocks.pop() || blocks.air;
 					}
 				}
@@ -149,22 +154,24 @@
 	}
 
 	function setHoveredBlock(row: number, column: number) {
-		gameState.hoveredBlock = grid[row][column];
+		if (grid) gameState.hoveredBlock = grid[row][column];
 	}
 </script>
 
-<div class="grid aspect-10/8 h-full grid-cols-10 grid-rows-8 gap-1 p-1">
-	{#each grid as column, rowIndex (rowIndex)}
-		{#each column as cell, columnIndex (`cell-${rowIndex}-${columnIndex}-${cell.id}`)}
-			<button
-				id="cell-{rowIndex}-{columnIndex}"
-				bind:this={cellElements[`cell-${rowIndex}-${columnIndex}`]}
-				aria-label={cell.name}
-				class="{cell.style} h-full w-full rounded-md transition"
-				onclick={() => onBlockClick(rowIndex, columnIndex, cell.id)}
-				onfocus={() => setHoveredBlock(rowIndex, columnIndex)}
-				onmouseover={() => setHoveredBlock(rowIndex, columnIndex)}
-			></button>
+{#if grid}
+	<div class="grid aspect-10/8 h-full grid-cols-10 grid-rows-8 gap-1 p-1">
+		{#each grid as column, rowIndex (rowIndex)}
+			{#each column as cell, columnIndex (`cell-${rowIndex}-${columnIndex}-${cell.id}`)}
+				<button
+					id="cell-{rowIndex}-{columnIndex}"
+					bind:this={cellElements[`cell-${rowIndex}-${columnIndex}`]}
+					aria-label={cell.name}
+					class="{cell.style} h-full w-full rounded-md transition"
+					onclick={() => onBlockClick(rowIndex, columnIndex, cell.id)}
+					onfocus={() => setHoveredBlock(rowIndex, columnIndex)}
+					onmouseover={() => setHoveredBlock(rowIndex, columnIndex)}
+				></button>
+			{/each}
 		{/each}
-	{/each}
-</div>
+	</div>
+{/if}
