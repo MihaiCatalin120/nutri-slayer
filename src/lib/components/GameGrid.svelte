@@ -14,7 +14,7 @@
 		grid = Array.from({ length: GRID_HEIGHT }, () =>
 			Array.from(
 				{ length: GRID_WIDTH },
-				() => blocks.all[Math.floor(Math.random() * blocks.all.length)]
+				() => blocks.all[Math.floor(gameState.rand() * blocks.all.length)]
 			)
 		);
 
