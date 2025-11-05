@@ -3,7 +3,9 @@
 	import { gameState } from '$lib/store/game-state.svelte';
 	import * as blocks from '$lib/store/game-blocks';
 	import { type GameBlock } from '../../models/block';
+	import { prng_alea } from 'esm-seedrandom';
 
+	let rand = prng_alea('banana');
 	let isAnimating = $state(false);
 	let GRID_WIDTH = 10;
 	let GRID_HEIGHT = 8;
@@ -12,10 +14,7 @@
 	let cellElements: Record<string, HTMLButtonElement> = $state({});
 	onMount(() => {
 		grid = Array.from({ length: GRID_HEIGHT }, () =>
-			Array.from(
-				{ length: GRID_WIDTH },
-				() => blocks.all[Math.floor(Math.random() * blocks.all.length)]
-			)
+			Array.from({ length: GRID_WIDTH }, () => blocks.all[Math.floor(rand() * blocks.all.length)])
 		);
 
 		setTimeout(() => {
