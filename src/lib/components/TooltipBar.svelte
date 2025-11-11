@@ -4,7 +4,7 @@
 
 <div class="flex w-full flex-col gap-2 p-4">
 	<div class="h-1/2 w-full rounded-xl bg-red-300 p-2">Enemy info</div>
-	<div class="h-1/2 w-full rounded-xl bg-green-300 p-2">
+	<div class="flex h-1/2 w-full flex-col rounded-xl bg-green-300 p-2">
 		{#if gameState.hoveredBlock}
 			<p>{gameState.hoveredBlock.name}</p>
 			<p>{gameState.hoveredBlock.description}</p>
@@ -19,5 +19,7 @@
 				</div>
 			</div>
 		{/if}
+
+		<span class="ms-auto mt-auto text-xs">{gameState.seed}</span>
 	</div>
 </div>

@@ -5,7 +5,6 @@
 	import { type GameBlock } from '../../models/block';
 	import { prng_alea } from 'esm-seedrandom';
 
-	let rand = prng_alea('banana');
 	let isAnimating = $state(false);
 	let GRID_WIDTH = 10;
 	let GRID_HEIGHT = 8;
@@ -13,8 +12,13 @@
 
 	let cellElements: Record<string, HTMLButtonElement> = $state({});
 	onMount(() => {
+		gameState.seed = crypto.randomUUID();
+		gameState.rand = prng_alea(crypto.randomUUID());
 		grid = Array.from({ length: GRID_HEIGHT }, () =>
-			Array.from({ length: GRID_WIDTH }, () => blocks.all[Math.floor(rand() * blocks.all.length)])
+			Array.from(
+				{ length: GRID_WIDTH },
+				() => blocks.all[Math.floor(gameState.rand() * blocks.all.length)]
+			)
 		);
 
 		setTimeout(() => {
