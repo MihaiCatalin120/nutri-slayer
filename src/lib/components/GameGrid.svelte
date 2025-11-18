@@ -4,6 +4,7 @@
 	import * as blocks from '$lib/store/game-blocks';
 	import { type GameBlock } from '../../models/block';
 	import { prng_alea } from 'esm-seedrandom';
+	import { enemies } from '$lib/store/enemies';
 
 	let isAnimating = $state(false);
 	let GRID_WIDTH = 10;
@@ -12,6 +13,7 @@
 
 	let cellElements: Record<string, HTMLButtonElement> = $state({});
 	onMount(() => {
+		// gameState.seed = 'ea40d8cf-6b5d-46ee-9343-ce4030c10c41';
 		gameState.seed = crypto.randomUUID();
 		gameState.rand = prng_alea(crypto.randomUUID());
 		grid = Array.from({ length: GRID_HEIGHT }, () =>
@@ -20,11 +22,35 @@
 				() => blocks.all[Math.floor(gameState.rand() * blocks.all.length)]
 			)
 		);
+		pickEnemy();
 
 		setTimeout(() => {
 			applyGravity();
 		}, 200);
 	});
+
+	function pickEnemy() {
+		const validEnemies = enemies.filter((enemy) => {
+			return (
+				gameState.stage >= (enemy.minStage || 0) && gameState.stage <= (enemy.maxStage || Infinity)
+			);
+		});
+
+		const index = gameState.rand() * validEnemies.length;
+		const selectedEnemy = validEnemies[Math.floor(index)];
+
+		const totalHP = selectedEnemy.baseHP + selectedEnemy.baseHP * 0.1 * gameState.stage;
+		const totalDamage =
+			selectedEnemy.baseDamage + selectedEnemy.baseDamage * 0.05 * gameState.stage;
+
+		gameState.currentEnemy = {
+			...selectedEnemy,
+			totalHP,
+			currentHP: totalHP,
+			totalDamage,
+			turnsUntilAttack: selectedEnemy.turnsPerAttack
+		};
+	}
 
 	function onBlockClick(row: number, column: number, blockID: number) {
 		if (isAnimating) return;
@@ -70,6 +96,15 @@
 		return group;
 	}
 
+	function applyPlayerDamage() {
+		if (!gameState.currentEnemy?.currentHP) {
+			console.error('Undefined enemy current hp in applyPlayerDamage!');
+			return;
+		}
+		gameState.currentEnemy.currentHP -= gameState.nextAttackDamage * gameState.attackMultiplier;
+		gameState.nextAttackDamage = 0;
+	}
+
 	function popGroup(group: Array<{ row: number; column: number }>) {
 		isAnimating = true;
 
@@ -96,6 +131,9 @@
 		setTimeout(() => {
 			applyGravity().then(() => {
 				isAnimating = false;
+
+				applyPlayerDamage();
+				// TODO: implement all steps
 			});
 		}, 200);
 	}

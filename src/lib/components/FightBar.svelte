@@ -17,9 +17,13 @@
 		</div>
 	</div>
 	<div class="relative flex">
-		<img src="/images/fry-gon.png" class="object-contain" width="300" alt="enemy" />
-		<div
-			class="absolute bottom-3 left-0 h-5 w-full rounded-md border-1 border-white bg-green-500"
-		></div>
+		{#if gameState.currentEnemy}
+			<img src={gameState.currentEnemy.imageUrl} class="object-contain" width="300" alt="enemy" />
+			<div
+				class="absolute bottom-3 left-0 flex h-5 w-full items-center justify-center rounded-md border-1 border-white bg-green-500 text-black"
+			>
+				{gameState.currentEnemy?.currentHP}/{gameState.currentEnemy?.totalHP}
+			</div>
+		{/if}
 	</div>
 </div>

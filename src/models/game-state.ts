@@ -6,6 +6,7 @@ export type GameState = {
   currentHP: number,
   nextAttackDamage: number,
   attackMultiplier: number,
+  stage: number,
   hoveredBlock: GameBlock | null,
   currentEnemy: CurrentEnemy | null,
   seed: string,
