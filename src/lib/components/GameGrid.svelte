@@ -39,9 +39,10 @@
 		const index = gameState.rand() * validEnemies.length;
 		const selectedEnemy = validEnemies[Math.floor(index)];
 
-		const totalHP = selectedEnemy.baseHP + selectedEnemy.baseHP * 0.1 * gameState.stage;
-		const totalDamage =
-			selectedEnemy.baseDamage + selectedEnemy.baseDamage * 0.05 * gameState.stage;
+		const totalHP = Math.floor(selectedEnemy.baseHP + selectedEnemy.baseHP * 0.1 * gameState.stage);
+		const totalDamage = Math.floor(
+			selectedEnemy.baseDamage + selectedEnemy.baseDamage * 0.05 * gameState.stage
+		);
 
 		gameState.currentEnemy = {
 			...selectedEnemy,
@@ -103,6 +104,15 @@
 		}
 		gameState.currentEnemy.currentHP -= gameState.nextAttackDamage * gameState.attackMultiplier;
 		gameState.nextAttackDamage = 0;
+		if (gameState.currentEnemy.currentHP <= 0) {
+			gameState.currentEnemy.currentHP = 0;
+			gameState.stage++;
+
+			setTimeout(() => {
+				alert(`Good job! You advance to stage ${gameState.stage}`);
+				pickEnemy();
+			}, 300);
+		}
 	}
 
 	function popGroup(group: Array<{ row: number; column: number }>) {

@@ -33,7 +33,12 @@
 	</div>
 	<div class="relative flex">
 		{#if gameState.currentEnemy}
-			<img src={gameState.currentEnemy.imageUrl} class="object-contain" width="300" alt="enemy" />
+			<img
+				src={gameState.currentEnemy.imageUrl}
+				class="object-contain {gameState.currentEnemy.currentHP <= 0 && 'animate-pop'}"
+				width="300"
+				alt="enemy"
+			/>
 			<div
 				class="absolute bottom-3 left-0 h-5 w-full overflow-hidden rounded-md border-1 border-white"
 			>

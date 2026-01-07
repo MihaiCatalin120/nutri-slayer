@@ -13,7 +13,7 @@ const frygon = {
 const c_andy = {
   id: 1,
   name: 'C-Andy',
-  baseHP: 100,
+  baseHP: 20,
   baseDamage: 2,
   turnsPerAttack: 3,
   imageUrl: '/images/c_andy.png',
@@ -47,7 +47,7 @@ const turbofizz = {
   baseDamage: 5,
   turnsPerAttack: 5,
   imageUrl: '/images/turbo-fizz.png',
-  minStage: 1,
+  minStage: 2,
 };
 
 const gingee = {
@@ -57,7 +57,7 @@ const gingee = {
   baseDamage: 3,
   turnsPerAttack: 2,
   imageUrl: '/images/gingee.png',
-  minStage: 1,
+  minStage: 2,
   maxStage: 5,
 };
 
