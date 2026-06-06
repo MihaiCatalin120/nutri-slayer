@@ -2,7 +2,7 @@ package main
 
 Gravity_Move :: struct {
 	col, from_row, to_row: int,
-	block: Block_Type,
+	block:                 Block_Type,
 }
 
 anim_init :: proc(anims: ^Anim_State) {
@@ -47,7 +47,7 @@ compute_gravity_moves :: proc(board: ^Board, moves: ^[MAX_FALL_ANIMS]Gravity_Mov
 add_fall_anim :: proc(anims: ^Anim_State, col, from_row, to_row: int, block: Block_Type) {
 	for i in 0 ..< MAX_FALL_ANIMS {
 		if !anims.falls[i].active {
-			anims.falls[i] = Fall_Anim{
+			anims.falls[i] = Fall_Anim {
 				active   = true,
 				col      = col,
 				from_row = f32(from_row),
@@ -62,7 +62,12 @@ add_fall_anim :: proc(anims: ^Anim_State, col, from_row, to_row: int, block: Blo
 add_pop_anim :: proc(anims: ^Anim_State, col, row: int, block: Block_Type) {
 	for i in 0 ..< MAX_POP_ANIMS {
 		if !anims.pops[i].active {
-			anims.pops[i] = Pop_Anim{active = true, col = col, row = row, block = block}
+			anims.pops[i] = Pop_Anim {
+				active = true,
+				col    = col,
+				row    = row,
+				block  = block,
+			}
 			return
 		}
 	}
@@ -163,6 +168,6 @@ try_pop_group :: proc(state: ^Game_State, col, row: int) -> bool {
 
 	state.anims.pending_gravity = true
 	state.anims.locked = true
-	player_attack(state, block, count)
+	player_action(state, block, count)
 	return true
 }

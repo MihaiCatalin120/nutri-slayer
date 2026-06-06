@@ -9,6 +9,7 @@ update_game :: proc(state: ^Game_State, dt: f32) {
 
 	update_animations(state, dt)
 	update_damage_anims(state, dt)
+	update_shield_anims(state, dt)
 
 	over, _ := game_is_over(state)
 	if over {

@@ -16,11 +16,11 @@ Block_Type :: enum u8 {
 NUM_BLOCK_TYPES :: int(Block_Type.Sugar) + 1
 
 Block_Colors: [NUM_BLOCK_TYPES]rl.Color = {
-	{156, 23, 23, 255},   // protein
+	{156, 23, 23, 255}, // protein
 	{207, 200, 105, 255}, // carbohydrates
-	{232, 144, 44, 255},  // fiber
-	{31, 163, 35, 255},   // unsaturated fat
-	{201, 145, 40, 255},  // saturated fat
+	{232, 144, 44, 255}, // fiber
+	{31, 163, 35, 255}, // unsaturated fat
+	{201, 145, 40, 255}, // saturated fat
 	{212, 211, 205, 255}, // sugar
 }
 
@@ -110,13 +110,28 @@ Damage_Target :: enum u8 {
 }
 
 MAX_DAMAGE_ANIMS :: 4
+MAX_SHIELD_ANIMS :: 4
 DAMAGE_HOLD_DELAY: f32 : 0.45
 DAMAGE_FLY_DURATION: f32 : 0.35
+SHIELD_HOLD_DELAY: f32 : DAMAGE_HOLD_DELAY / 2
+SHIELD_FLY_DURATION: f32 : DAMAGE_FLY_DURATION
 
 Damage_Anim :: struct {
 	active:     bool,
 	damage:     i32,
 	target:     Damage_Target,
+	hold_timer: f32,
+	fly_t:      f32,
+	flying:     bool,
+	start_x:    f32,
+	start_y:    f32,
+	end_x:      f32,
+	end_y:      f32,
+}
+
+Shield_Anim :: struct {
+	active:     bool,
+	shield:     i32,
 	hold_timer: f32,
 	fly_t:      f32,
 	flying:     bool,
@@ -136,29 +151,31 @@ Board :: struct {
 }
 
 Actor :: struct {
-	name:           cstring,
-	hp:             i32,
-	max_hp:         i32,
-	turns_per_attack: i32,
+	name:               cstring,
+	hp:                 i32,
+	max_hp:             i32,
+	shield:             i32,
+	turns_per_attack:   i32,
 	turns_until_attack: i32,
-	color:          rl.Color,
+	color:              rl.Color,
 }
 
 Game_State :: struct {
-	board:              Board,
-	anims:              Anim_State,
-	damage_anims:       [MAX_DAMAGE_ANIMS]Damage_Anim,
-	player:             Actor,
-	enemy:              Actor,
-	player_turns:       i32,
-	search_buffer:      [64]u8,
-	search_len:         int,
-	last_meal:          [64]u8,
-	last_meal_len:      int,
-	status_message:     [128]u8,
-	status_timer:       f32,
+	board:                Board,
+	anims:                Anim_State,
+	damage_anims:         [MAX_DAMAGE_ANIMS]Damage_Anim,
+	shield_anims:         [MAX_SHIELD_ANIMS]Shield_Anim,
+	player:               Actor,
+	enemy:                Actor,
+	player_turns:         i32,
+	search_buffer:        [64]u8,
+	search_len:           int,
+	last_meal:            [64]u8,
+	last_meal_len:        int,
+	status_message:       [128]u8,
+	status_timer:         f32,
 	hover_col, hover_row: int,
-	selected_count:     int,
+	selected_count:       int,
 }
 
 Food_Item :: struct {

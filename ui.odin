@@ -31,7 +31,7 @@ draw_arena_frame :: proc() {
 	draw_section_label("ENEMY", WINDOW_W - PANEL_W, 0)
 }
 
-draw_hp_bar :: proc(x, y, w, h: i32, hp, max_hp: i32) {
+draw_hp_bar :: proc(x, y, w, h, hp, max_hp: i32) {
 	rl.DrawRectangle(x, y, w, h, {40, 40, 50, 255})
 	if max_hp > 0 {
 		fill_w := i32(f32(w) * f32(hp) / f32(max_hp))
@@ -44,6 +44,14 @@ draw_hp_bar :: proc(x, y, w, h: i32, hp, max_hp: i32) {
 	hp_text := fmt.bprintf(hp_buf[:], "%d / %d HP", hp, max_hp)
 	tw := rl.MeasureText(to_cstring(hp_text), 14)
 	draw_text(hp_text, x + (w - tw) / 2, y + (h - 14) / 2, 14, rl.WHITE)
+}
+
+draw_shield :: proc(x, y, w, h, shield: i32) {
+	shield_buf: [32]u8
+	shield_text := fmt.bprintf(shield_buf[:], "%d shield", shield)
+	font_size := i32(12)
+	tw := rl.MeasureText(to_cstring(shield_text), font_size)
+	draw_text(shield_text, x + (w - tw), y + (h - font_size) / 2, font_size, rl.WHITE)
 }
 
 draw_actor_sprite :: proc(x, y, size: i32, actor: ^Actor, is_player: bool) {
@@ -235,6 +243,7 @@ draw_ui :: proc(state: ^Game_State) {
 
 	draw_actor_sprite(sx, 36, sprite_size, &state.player, true)
 	draw_hp_bar(16, 140, PANEL_W - 32, 22, state.player.hp, state.player.max_hp)
+	draw_shield(16, 140 - 22, PANEL_W - 32, 22, state.player.shield)
 	draw_stats(0, stats_y, PANEL_W, STATS_H, "Player stats / info")
 	draw_hovered_block_info(state, 0, block_info_y, PANEL_W, BLOCK_INFO_H)
 
@@ -253,6 +262,7 @@ draw_ui :: proc(state: ^Game_State) {
 	draw_board(state)
 
 	draw_damage_anims(state)
+	draw_shield_anims(state)
 
 	// --- Search bar ---
 	draw_search_bar(state)
@@ -277,5 +287,17 @@ draw_ui :: proc(state: ^Game_State) {
 			20,
 			rl.WHITE,
 		)
+	}
+
+	if won {
+		state.enemy = Actor {
+			name               = "Enemy",
+			hp                 = 80,
+			max_hp             = 80,
+			shield             = 0,
+			turns_per_attack   = 3,
+			turns_until_attack = 3,
+			color              = {180, 60, 60, 255},
+		}
 	}
 }

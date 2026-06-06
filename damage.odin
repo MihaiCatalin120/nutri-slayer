@@ -43,14 +43,14 @@ spawn_damage_anim :: proc(state: ^Game_State, damage: i32, target: Damage_Target
 
 	for i in 0 ..< MAX_DAMAGE_ANIMS {
 		if !state.damage_anims[i].active {
-			state.damage_anims[i] = Damage_Anim{
-				active     = true,
-				damage     = damage,
-				target     = target,
-				start_x    = start_x,
-				start_y    = start_y,
-				end_x      = end_x,
-				end_y      = end_y,
+			state.damage_anims[i] = Damage_Anim {
+				active  = true,
+				damage  = damage,
+				target  = target,
+				start_x = start_x,
+				start_y = start_y,
+				end_x   = end_x,
+				end_y   = end_y,
 			}
 			return
 		}
@@ -63,6 +63,9 @@ apply_damage :: proc(state: ^Game_State, anim: ^Damage_Anim) {
 		state.enemy.hp -= anim.damage
 		if state.enemy.hp < 0 do state.enemy.hp = 0
 	case .Player:
+		anim.damage -= state.player.shield
+		state.player.shield = 0
+		if (anim.damage < 0) do anim.damage = 0
 		state.player.hp -= anim.damage
 		if state.player.hp < 0 do state.player.hp = 0
 	}
@@ -93,7 +96,8 @@ damage_anim_position :: proc(anim: ^Damage_Anim) -> (x, y: f32) {
 		return anim.start_x, anim.start_y
 	}
 	t := ease_in_quad(anim.fly_t)
-	return anim.start_x + (anim.end_x - anim.start_x) * t, anim.start_y + (anim.end_y - anim.start_y) * t
+	return anim.start_x + (anim.end_x - anim.start_x) * t,
+		anim.start_y + (anim.end_y - anim.start_y) * t
 }
 
 draw_damage_anims :: proc(state: ^Game_State) {

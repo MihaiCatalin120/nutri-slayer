@@ -8,9 +8,15 @@ calc_attack_damage :: proc(block: Block_Type, pop_count: int) -> i32 {
 	return i32(raw + 0.5)
 }
 
-player_attack :: proc(state: ^Game_State, block: Block_Type, pop_count: int) {
+player_action :: proc(state: ^Game_State, block: Block_Type, pop_count: int) {
 	damage := calc_attack_damage(block, pop_count)
-	spawn_damage_anim(state, damage, .Enemy)
+
+	#partial switch block {
+	case .Carbohydrates, .Fiber:
+		spawn_shield_anim(state, damage)
+	case:
+		spawn_damage_anim(state, damage, .Enemy)
+	}
 
 	state.player_turns += 1
 	try_enemy_attack(state)
@@ -27,24 +33,26 @@ try_enemy_attack :: proc(state: ^Game_State) {
 }
 
 game_is_over :: proc(state: ^Game_State) -> (over: bool, player_won: bool) {
-	if state.enemy.hp <= 0 do return true, true
+	if state.enemy.hp <= 0 do return false, true
 	if state.player.hp <= 0 do return true, false
 	return false, false
 }
 
 reset_game :: proc(state: ^Game_State) {
 	board_init(&state.board)
-	state.player = Actor{
-		name           = "Player",
-		hp             = 100,
-		max_hp         = 100,
+	state.player = Actor {
+		name             = "Player",
+		hp               = 100,
+		max_hp           = 100,
+		shield           = 0,
 		turns_per_attack = 0,
-		color          = {60, 120, 200, 255},
+		color            = {60, 120, 200, 255},
 	}
-	state.enemy = Actor{
+	state.enemy = Actor {
 		name               = "Enemy",
 		hp                 = 80,
 		max_hp             = 80,
+		shield             = 0,
 		turns_per_attack   = 3,
 		turns_until_attack = 3,
 		color              = {180, 60, 60, 255},
@@ -58,4 +66,5 @@ reset_game :: proc(state: ^Game_State) {
 	state.selected_count = 0
 	anim_init(&state.anims)
 	damage_init(state)
+	shield_init(state)
 }
