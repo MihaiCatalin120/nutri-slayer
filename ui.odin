@@ -206,7 +206,7 @@ draw_board :: proc(state: ^Game_State) {
 		anim := &state.anims.falls[i]
 		if !anim.active do continue
 
-		row_f := anim.from_row + (f32(anim.to_row) - anim.from_row) * ease_out_quad(anim.t)
+		row_f := anim.from_row + (f32(anim.to_row) - anim.from_row) * ease_in_quad(anim.t)
 		x := ox + f32(anim.col) * cell_w + pad
 		y := oy + row_f * cell_h + pad
 		bw := cell_w - pad * 2
