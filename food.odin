@@ -20,11 +20,7 @@ FOOD_DATABASE: []Food_Item = {
 		terms = {"sandwich", "sub", "panini"},
 		probs = {0.22, 0.30, 0.08, 0.15, 0.12, 0.13},
 	},
-	{
-		name = "apple",
-		terms = {"apple", "fruit"},
-		probs = {0.02, 0.18, 0.28, 0.02, 0.00, 0.50},
-	},
+	{name = "apple", terms = {"apple", "fruit"}, probs = {0.02, 0.18, 0.28, 0.02, 0.00, 0.50}},
 	{
 		name = "chicken breast",
 		terms = {"chicken", "chicken breast", "grilled chicken"},
@@ -45,13 +41,16 @@ FOOD_DATABASE: []Food_Item = {
 		terms = {"donut", "doughnut", "pastry"},
 		probs = {0.06, 0.38, 0.02, 0.10, 0.18, 0.26},
 	},
+	{name = "", terms = {""}, probs = {0.2, 0.2, 0.2, 0.2, 0.1, 0.1}},
 }
 
 find_food :: proc(query: string) -> (^Food_Item, bool) {
 	trimmed := strings.trim_space(query)
-	if len(trimmed) == 0 {
-		return nil, false
-	}
+
+	// TODO: Debug purpose only, uncomment on release
+	// if len(trimmed) == 0 {
+	// 	return nil, false
+	// }
 
 	lower := strings.to_lower(trimmed, context.temp_allocator)
 
@@ -113,7 +112,7 @@ spawn_food_blocks :: proc(state: ^Game_State, food: ^Food_Item) -> int {
 		for row in 0 ..< GRID_ROWS {
 			if placed >= to_fill do break
 			if !board.cells[row][col].active {
-				board.cells[row][col] = Cell{
+				board.cells[row][col] = Cell {
 					active = true,
 					block  = pick_block_from_probs(food.probs),
 				}
