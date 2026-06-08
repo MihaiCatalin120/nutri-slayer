@@ -27,8 +27,7 @@ update_game :: proc(state: ^Game_State, dt: f32) {
 		}
 	}
 
-	mx := rl.GetMouseX()
-	my := rl.GetMouseY()
+	mx, my := viewport_mouse()
 
 	state.hover_col = -1
 	state.hover_row = -1
@@ -56,8 +55,9 @@ update_game :: proc(state: ^Game_State, dt: f32) {
 }
 
 main :: proc() {
-	rl.SetConfigFlags({.MSAA_4X_HINT})
+	rl.SetConfigFlags({.MSAA_4X_HINT, .WINDOW_RESIZABLE})
 	rl.InitWindow(WINDOW_W, WINDOW_H, "nutri-slayer")
+	rl.SetWindowMinSize(640, 360)
 	rl.SetTargetFPS(60)
 
 	state: Game_State
@@ -65,11 +65,12 @@ main :: proc() {
 
 	for !rl.WindowShouldClose() {
 		dt := rl.GetFrameTime()
+		viewport_update()
 		update_game(&state, dt)
 
-		rl.BeginDrawing()
+		viewport_begin_frame()
 		draw_ui(&state)
-		rl.EndDrawing()
+		viewport_end_frame()
 	}
 
 	rl.CloseWindow()

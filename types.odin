@@ -56,6 +56,7 @@ GRID_COLS :: 9
 GRID_ROWS :: 9
 MIN_POP_SIZE :: 2
 
+// Design resolution — all layout and input use these logical pixels.
 WINDOW_W: i32 : 1280
 WINDOW_H: i32 : 720
 
