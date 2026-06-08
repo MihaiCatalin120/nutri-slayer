@@ -52,8 +52,8 @@ Block_Attack_Multiplier: [NUM_BLOCK_TYPES]f32 = {
 	0.7, // sugar
 }
 
-GRID_COLS :: 9
-GRID_ROWS :: 9
+GRID_COLS :: 10
+GRID_ROWS :: 8
 MIN_POP_SIZE :: 2
 
 // Design resolution — all layout and input use these logical pixels.
@@ -156,14 +156,14 @@ Board :: struct {
 
 Actor :: struct {
 	name:               cstring,
-    damage:             i32,
+	damage:             i32,
 	hp:                 i32,
 	max_hp:             i32,
 	shield:             i32,
 	turns_per_attack:   i32,
 	turns_until_attack: i32,
-    min_stage:          i32,
-    max_stage:          i32,
+	min_stage:          i32,
+	max_stage:          i32,
 	color:              rl.Color,
 }
 
@@ -183,7 +183,7 @@ Game_State :: struct {
 	status_timer:         f32,
 	hover_col, hover_row: int,
 	selected_count:       int,
-    stage:                int,
+	stage:                int,
 }
 
 Food_Item :: struct {
