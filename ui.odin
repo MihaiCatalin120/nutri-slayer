@@ -26,9 +26,6 @@ draw_arena_frame :: proc() {
 
 	rl.DrawRectangle(ARENA_X, ARENA_Y, ARENA_W, ARENA_H, {35, 35, 45, 255})
 	rl.DrawRectangleLinesEx({f32(ARENA_X), f32(ARENA_Y), f32(ARENA_W), f32(ARENA_H)}, 2, border)
-
-	draw_section_label("PLAYER", 0, 0)
-	draw_section_label("ENEMY", WINDOW_W - PANEL_W, 0)
 }
 
 draw_hp_bar :: proc(x, y, w, h, hp, max_hp: i32) {
