@@ -18,7 +18,7 @@ NUM_BLOCK_TYPES :: int(Block_Type.Sugar) + 1
 Block_Colors: [NUM_BLOCK_TYPES]rl.Color = {
 	{156, 23, 23, 255}, // protein
 	{207, 200, 105, 255}, // carbohydrates
-	{232, 144, 44, 255}, // fiber
+	{44, 66, 44, 255}, // fiber
 	{31, 163, 35, 255}, // unsaturated fat
 	{201, 145, 40, 255}, // saturated fat
 	{212, 211, 205, 255}, // sugar
