@@ -77,7 +77,6 @@ reset_game :: proc(state: ^Game_State) {
 		color            = {60, 120, 200, 255},
 	}
 
-    state.enemy = pick_enemy(state.stage)
 	state.player_turns = 0
 	state.search_len = 0
 	state.last_meal_len = 0
@@ -85,7 +84,7 @@ reset_game :: proc(state: ^Game_State) {
 	state.hover_col = -1
 	state.hover_row = -1
 	state.selected_count = 0
-    state.stage = 1 
+	state.enemy = pick_enemy(state.stage)
 	anim_init(&state.anims)
 	damage_init(state)
 	shield_init(state)

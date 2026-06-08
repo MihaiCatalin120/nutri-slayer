@@ -2,7 +2,8 @@ package main
 
 import rl "vendor:raylib"
 
-update_game :: proc(state: ^Game_State, dt: f32) {
+update_game :: proc(app: ^App_State, dt: f32) {
+	state := &app.game
 	if state.status_timer > 0 {
 		state.status_timer -= dt
 	}
@@ -11,10 +12,9 @@ update_game :: proc(state: ^Game_State, dt: f32) {
 	update_damage_anims(state, dt)
 	update_shield_anims(state, dt)
 
-	over := game_is_over(state)
-	if over {
+	if game_is_over(state) {
 		if rl.IsKeyPressed(.R) {
-			reset_game(state)
+			app.screen = .Title
 		}
 		return
 	}
@@ -70,16 +70,34 @@ main :: proc() {
 	rl.SetWindowMinSize(640, 360)
 	rl.SetTargetFPS(60)
 
-	state: Game_State
-	reset_game(&state)
+	app := App_State {
+		screen = .Title,
+		settings = {target_fps = 60, resolution = .Monitor_Native},
+	}
+	apply_settings(&app.settings)
 
-	for !rl.WindowShouldClose() {
+	for !rl.WindowShouldClose() && !app.request_quit {
 		dt := rl.GetFrameTime()
 		viewport_update()
-		update_game(&state, dt)
+
+		switch app.screen {
+		case .Title:
+			update_title(&app)
+		case .Options:
+			update_options(&app)
+		case .Playing:
+			update_game(&app, dt)
+		}
 
 		viewport_begin_frame()
-		draw_ui(&state)
+		switch app.screen {
+		case .Title:
+			draw_title()
+		case .Options:
+			draw_options(&app)
+		case .Playing:
+			draw_ui(&app.game)
+		}
 		viewport_end_frame()
 	}
 

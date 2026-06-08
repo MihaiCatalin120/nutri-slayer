@@ -288,9 +288,10 @@ draw_ui :: proc(state: ^Game_State) {
 		title_color := rl.Color{220, 80, 80, 255}
 		tw := rl.MeasureText(to_cstring(title), 48)
 		draw_text(title, (WINDOW_W - tw) / 2, WINDOW_H / 2 - 40, 48, title_color)
+		back_msg := "Press R to return to title"
 		draw_text(
-			"Press R to restart",
-			(WINDOW_W - rl.MeasureText(to_cstring("Press R to restart"), 20)) / 2,
+			back_msg,
+			(WINDOW_W - rl.MeasureText(to_cstring(back_msg), 20)) / 2,
 			WINDOW_H / 2 + 20,
 			20,
 			rl.WHITE,
