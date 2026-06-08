@@ -60,11 +60,14 @@ draw_actor_sprite :: proc(x, y, size: i32, actor: ^Actor, is_player: bool) {
 	draw_text(icon, x + (size - iw) / 2, y + size / 2 - 24, 48, rl.WHITE)
 }
 
-draw_stats :: proc(x, y, w, h: i32, title: cstring) {
+draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor) {
 	rl.DrawRectangle(x, y, w, h, {30, 30, 38, 255})
 	rl.DrawRectangleLinesEx({f32(x), f32(y), f32(w), f32(h)}, 1, {60, 60, 75, 255})
-	rl.DrawText(title, x + 8, y + 6, 14, {150, 150, 170, 255})
-	rl.DrawText("(buffs / debuffs — placeholder)", x + 8, y + 28, 12, {100, 100, 115, 255})
+	rl.DrawText(actor.name, x + 8, y + 6, 14, {150, 150, 170, 255})
+
+    damage_buf: [32]u8
+    damage_text := fmt.bprintf(damage_buf[:], "Damage: %d", actor.damage)
+    draw_text(damage_text, x + 8, y + 28, 12, {100, 100, 115, 255})
 }
 
 draw_hovered_block_info :: proc(state: ^Game_State, x, y, w, h: i32) {
@@ -227,6 +230,12 @@ draw_board :: proc(state: ^Game_State) {
 	}
 }
 
+draw_current_stage :: proc(stage: int) {
+    stage_buf: [32]u8
+    stage_text := fmt.bprintf(stage_buf[:], "Stage %d", stage)
+    draw_text(stage_text, WINDOW_W / 2, 10, 32, rl.WHITE)
+} 
+
 draw_ui :: proc(state: ^Game_State) {
 	rl.ClearBackground({20, 20, 26, 255})
 
@@ -241,12 +250,12 @@ draw_ui :: proc(state: ^Game_State) {
 	draw_actor_sprite(sx, 36, sprite_size, &state.player, true)
 	draw_hp_bar(16, 140, PANEL_W - 32, 22, state.player.hp, state.player.max_hp)
 	draw_shield(16, 140 - 22, PANEL_W - 32, 22, state.player.shield)
-	draw_stats(0, stats_y, PANEL_W, STATS_H, "Player stats / info")
+	draw_stats(0, stats_y, PANEL_W, STATS_H, "Player stats / info", state.player)
 	draw_hovered_block_info(state, 0, block_info_y, PANEL_W, BLOCK_INFO_H)
 
 	draw_actor_sprite(ex + sx, 36, sprite_size, &state.enemy, false)
 	draw_hp_bar(ex + 16, 140, PANEL_W - 32, 22, state.enemy.hp, state.enemy.max_hp)
-	draw_stats(ex, stats_y, PANEL_W, STATS_H, "Enemy stats")
+	draw_stats(ex, stats_y, PANEL_W, STATS_H, "Enemy stats", state.enemy)
 
 	counter_buf: [48]u8
 	counter_text := fmt.bprintf(
@@ -255,6 +264,8 @@ draw_ui :: proc(state: ^Game_State) {
 		state.enemy.turns_until_attack,
 	)
 	draw_text(counter_text, ex + 8, 170, 12, {170, 130, 130, 255})
+
+    draw_current_stage(state.stage)
 
 	draw_board(state)
 
@@ -270,11 +281,11 @@ draw_ui :: proc(state: ^Game_State) {
 	}
 
 	// Game over overlay
-	over, won := game_is_over(state)
+	over := game_is_over(state)
 	if over {
 		rl.DrawRectangle(0, 0, WINDOW_W, WINDOW_H, {0, 0, 0, 160})
-		title := won ? "Victory!" : "Defeat!"
-		title_color := won ? rl.Color{100, 220, 100, 255} : rl.Color{220, 80, 80, 255}
+		title := "Defeat!"
+		title_color := rl.Color{220, 80, 80, 255}
 		tw := rl.MeasureText(to_cstring(title), 48)
 		draw_text(title, (WINDOW_W - tw) / 2, WINDOW_H / 2 - 40, 48, title_color)
 		draw_text(
@@ -284,17 +295,5 @@ draw_ui :: proc(state: ^Game_State) {
 			20,
 			rl.WHITE,
 		)
-	}
-
-	if won {
-		state.enemy = Actor {
-			name               = "Enemy",
-			hp                 = 80,
-			max_hp             = 80,
-			shield             = 0,
-			turns_per_attack   = 3,
-			turns_until_attack = 3,
-			color              = {180, 60, 60, 255},
-		}
 	}
 }

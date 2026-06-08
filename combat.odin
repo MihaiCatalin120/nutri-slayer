@@ -26,37 +26,58 @@ try_enemy_attack :: proc(state: ^Game_State) {
 	state.enemy.turns_until_attack -= 1
 	if state.enemy.turns_until_attack > 0 do return
 
-	damage := i32(random_int_between(6, 14))
+	damage := state.enemy.damage
 	spawn_damage_anim(state, damage, .Player)
 
 	state.enemy.turns_until_attack = state.enemy.turns_per_attack
 }
 
-game_is_over :: proc(state: ^Game_State) -> (over: bool, player_won: bool) {
-	if state.enemy.hp <= 0 do return false, true
-	if state.player.hp <= 0 do return true, false
-	return false, false
+stage_won :: proc(state: ^Game_State) -> (won: bool) {
+	return state.enemy.hp <= 0
+}
+
+game_is_over :: proc(state: ^Game_State) -> (over: bool) {
+	return state.player.hp <= 0
+}
+
+enemy_valid_for_stage :: proc(enemy: Actor, stage: int) -> bool {
+    if enemy.max_stage == 0 {
+        return i32(stage) >= enemy.min_stage
+    }
+    return i32(stage) >= enemy.min_stage && i32(stage) <= enemy.max_stage
+}
+
+pick_enemy :: proc(stage: int) -> Actor {
+    valid := make([dynamic]Actor)
+
+    for enemy in ENEMY_DATABASE {
+        if enemy_valid_for_stage(enemy, stage) {
+            append(&valid, enemy)
+        }
+    }
+
+    assert(len(valid) > 0)
+    result: Actor = valid[random_int_between(0, i32(len(valid) - 1))]
+    result.damage += i32(f32(result.damage * (i32(stage) - 1)) * STAGE_DAMAGE_MULTIPLIER)
+    result.max_hp += i32(f32(result.max_hp * (i32(stage) - 1)) * STAGE_HP_MULTIPLIER)
+    result.hp = result.max_hp
+    delete(valid)
+    return result
 }
 
 reset_game :: proc(state: ^Game_State) {
 	board_init(&state.board)
 	state.player = Actor {
 		name             = "Player",
+        damage           = BASE_ATTACK_DAMAGE,
 		hp               = 100,
 		max_hp           = 100,
 		shield           = 0,
 		turns_per_attack = 0,
 		color            = {60, 120, 200, 255},
 	}
-	state.enemy = Actor {
-		name               = "Enemy",
-		hp                 = 80,
-		max_hp             = 80,
-		shield             = 0,
-		turns_per_attack   = 3,
-		turns_until_attack = 3,
-		color              = {180, 60, 60, 255},
-	}
+
+    state.enemy = pick_enemy(state.stage)
 	state.player_turns = 0
 	state.search_len = 0
 	state.last_meal_len = 0
@@ -64,6 +85,7 @@ reset_game :: proc(state: ^Game_State) {
 	state.hover_col = -1
 	state.hover_row = -1
 	state.selected_count = 0
+    state.stage = 1 
 	anim_init(&state.anims)
 	damage_init(state)
 	shield_init(state)

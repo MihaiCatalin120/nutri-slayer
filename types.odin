@@ -81,6 +81,9 @@ POP_ANIM_DURATION: f32 : 0.22
 MAX_FALL_ANIMS :: GRID_ROWS * GRID_COLS
 MAX_POP_ANIMS :: GRID_ROWS * GRID_COLS
 
+STAGE_DAMAGE_MULTIPLIER: f32 : 0.1
+STAGE_HP_MULTIPLIER: f32 : 0.2
+
 Fall_Anim :: struct {
 	active:   bool,
 	col:      int,
@@ -153,11 +156,14 @@ Board :: struct {
 
 Actor :: struct {
 	name:               cstring,
+    damage:             i32,
 	hp:                 i32,
 	max_hp:             i32,
 	shield:             i32,
 	turns_per_attack:   i32,
 	turns_until_attack: i32,
+    min_stage:          i32,
+    max_stage:          i32,
 	color:              rl.Color,
 }
 
@@ -177,6 +183,7 @@ Game_State :: struct {
 	status_timer:         f32,
 	hover_col, hover_row: int,
 	selected_count:       int,
+    stage:                int,
 }
 
 Food_Item :: struct {

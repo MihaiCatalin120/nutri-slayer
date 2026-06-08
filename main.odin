@@ -11,13 +11,19 @@ update_game :: proc(state: ^Game_State, dt: f32) {
 	update_damage_anims(state, dt)
 	update_shield_anims(state, dt)
 
-	over, _ := game_is_over(state)
+	over := game_is_over(state)
 	if over {
 		if rl.IsKeyPressed(.R) {
 			reset_game(state)
 		}
 		return
 	}
+
+    won := stage_won(state)
+    if won {
+        state.enemy = pick_enemy(state.stage)
+        state.stage += 1
+    }
 
 	if !anim_locked(state) {
 		search_input_char(state)
