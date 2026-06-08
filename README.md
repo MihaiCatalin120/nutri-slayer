@@ -135,15 +135,18 @@ Or build a binary:
 odin build . -out:nutri-slayer
 ```
 
+Run tests:
+
+```bash
+odin test tests
+```
+
 ## Project Structure
 
 ```
-main.odin    — entry point and game loop
-types.odin   — constants, enums, core structs
-board.odin   — grid, flood-fill pop, gravity
-food.odin    — food database, search, block spawning
-combat.odin  — damage, turns, win/lose
-ui.odin      — layout and rendering
+main.odin         — entry point
+src/              — game library (package game)
+tests/            — unit tests (one file per module)
 ```
 
 ## Modifying Game Design

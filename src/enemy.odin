@@ -1,4 +1,4 @@
-package main
+package game
 
 ENEMY_DATABASE: []Actor = {
 	{

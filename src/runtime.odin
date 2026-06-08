@@ -1,4 +1,4 @@
-package main
+package game
 
 import rl "vendor:raylib"
 
@@ -19,11 +19,11 @@ update_game :: proc(app: ^App_State, dt: f32) {
 		return
 	}
 
-    won := stage_won(state)
-    if won {
-        state.enemy = pick_enemy(state.stage)
-        state.stage += 1
-    }
+	won := stage_won(state)
+	if won {
+		state.enemy = pick_enemy(state.stage)
+		state.stage += 1
+	}
 
 	if !anim_locked(state) {
 		search_input_char(state)
@@ -58,48 +58,4 @@ update_game :: proc(app: ^App_State, dt: f32) {
 			}
 		}
 	}
-}
-
-main :: proc() {
-	monitor := i32(0)
-	screen_w := rl.GetMonitorWidth(monitor)
-	screen_h := rl.GetMonitorHeight(monitor)
-
-	rl.SetConfigFlags({.MSAA_4X_HINT, .FULLSCREEN_MODE, .WINDOW_RESIZABLE})
-	rl.InitWindow(screen_w, screen_h, "nutri-slayer")
-	rl.SetWindowMinSize(640, 360)
-	rl.SetTargetFPS(60)
-
-	app := App_State {
-		screen = .Title,
-		settings = {target_fps = 60, resolution = .Monitor_Native},
-	}
-	apply_settings(&app.settings)
-
-	for !rl.WindowShouldClose() && !app.request_quit {
-		dt := rl.GetFrameTime()
-		viewport_update()
-
-		switch app.screen {
-		case .Title:
-			update_title(&app)
-		case .Options:
-			update_options(&app)
-		case .Playing:
-			update_game(&app, dt)
-		}
-
-		viewport_begin_frame()
-		switch app.screen {
-		case .Title:
-			draw_title()
-		case .Options:
-			draw_options(&app)
-		case .Playing:
-			draw_ui(&app.game)
-		}
-		viewport_end_frame()
-	}
-
-	rl.CloseWindow()
 }

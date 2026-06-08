@@ -1,13 +1,17 @@
-package main
+package game
 
 import rl "vendor:raylib"
 
 viewport_camera: rl.Camera2D
 
+viewport_scale :: proc(screen_w, screen_h: f32) -> f32 {
+	return min(screen_w / f32(WINDOW_W), screen_h / f32(WINDOW_H))
+}
+
 viewport_update :: proc() {
 	screen_w := f32(rl.GetScreenWidth())
 	screen_h := f32(rl.GetScreenHeight())
-	scale := min(screen_w / f32(WINDOW_W), screen_h / f32(WINDOW_H))
+	scale := viewport_scale(screen_w, screen_h)
 
 	viewport_camera = rl.Camera2D {
 		target   = {f32(WINDOW_W) * 0.5, f32(WINDOW_H) * 0.5},

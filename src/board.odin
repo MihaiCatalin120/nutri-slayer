@@ -1,4 +1,4 @@
-package main
+package game
 
 board_init :: proc(board: ^Board) {
 	for row in 0 ..< GRID_ROWS {

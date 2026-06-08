@@ -1,4 +1,4 @@
-package main
+package game
 
 BASE_ATTACK_DAMAGE :: 4
 

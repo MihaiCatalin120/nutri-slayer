@@ -1,4 +1,4 @@
-package main
+package game
 
 Gravity_Move :: struct {
 	col, from_row, to_row: int,

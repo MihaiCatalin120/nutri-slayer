@@ -1,4 +1,4 @@
-package main
+package game
 
 import "core:fmt"
 import rl "vendor:raylib"
@@ -80,19 +80,26 @@ set_windowed_size :: proc(w, h: i32) {
 	rl.SetWindowSize(w, h)
 }
 
-cycle_fps :: proc(settings: ^Settings, delta: int) {
-	idx := fps_option_index(settings.target_fps)
+next_fps :: proc(current: i32, delta: int) -> i32 {
+	idx := fps_option_index(current)
 	count := len(FPS_OPTIONS)
 	idx = (idx + delta + count) % count
-	settings.target_fps = FPS_OPTIONS[idx]
+	return FPS_OPTIONS[idx]
+}
+
+next_resolution :: proc(current: Resolution_Preset, delta: int) -> Resolution_Preset {
+	preset := i32(current)
+	count := i32(Resolution_Preset.R_2560x1440) + 1
+	return Resolution_Preset((preset + i32(delta) + count) % count)
+}
+
+cycle_fps :: proc(settings: ^Settings, delta: int) {
+	settings.target_fps = next_fps(settings.target_fps, delta)
 	rl.SetTargetFPS(settings.target_fps)
 }
 
 cycle_resolution :: proc(settings: ^Settings, delta: int) {
-	preset := i32(settings.resolution)
-	count := i32(Resolution_Preset.R_2560x1440) + 1
-	preset = (preset + i32(delta) + count) % count
-	settings.resolution = Resolution_Preset(preset)
+	settings.resolution = next_resolution(settings.resolution, delta)
 	apply_settings(settings)
 }
 
