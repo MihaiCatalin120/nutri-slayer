@@ -61,8 +61,12 @@ update_game :: proc(state: ^Game_State, dt: f32) {
 }
 
 main :: proc() {
-	rl.SetConfigFlags({.MSAA_4X_HINT, .WINDOW_RESIZABLE})
-	rl.InitWindow(WINDOW_W, WINDOW_H, "nutri-slayer")
+	monitor := i32(0)
+	screen_w := rl.GetMonitorWidth(monitor)
+	screen_h := rl.GetMonitorHeight(monitor)
+
+	rl.SetConfigFlags({.MSAA_4X_HINT, .FULLSCREEN_MODE, .WINDOW_RESIZABLE})
+	rl.InitWindow(screen_w, screen_h, "nutri-slayer")
 	rl.SetWindowMinSize(640, 360)
 	rl.SetTargetFPS(60)
 
