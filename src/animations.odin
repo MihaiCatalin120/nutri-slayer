@@ -1,5 +1,7 @@
 package game
 
+import rl "vendor:raylib"
+
 Gravity_Move :: struct {
 	col, from_row, to_row: int,
 	block:                 Block_Type,
@@ -131,9 +133,11 @@ update_animations :: proc(state: ^Game_State, dt: f32) {
 		start_gravity_anims(state)
 	}
 
+	had_fall_anims := false
 	for i in 0 ..< MAX_FALL_ANIMS {
 		anim := &anims.falls[i]
 		if !anim.active do continue
+		had_fall_anims = true
 
 		anim.t += dt / FALL_ANIM_DURATION
 		if anim.t >= 1 {
@@ -143,6 +147,7 @@ update_animations :: proc(state: ^Game_State, dt: f32) {
 	}
 
 	if count_active_pops(anims) == 0 && count_active_falls(anims) == 0 && !anims.pending_gravity {
+		if anims.locked && had_fall_anims do rl.PlaySound(SOUNDS["block_collision"])
 		anims.locked = false
 	}
 }
@@ -165,6 +170,8 @@ try_pop_group :: proc(state: ^Game_State, col, row: int) -> bool {
 			state.board.cells[r][c] = Cell{}
 		}
 	}
+
+	rl.PlaySound(SOUNDS["block_pop"])
 
 	state.anims.pending_gravity = true
 	state.anims.locked = true

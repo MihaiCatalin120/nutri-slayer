@@ -1,7 +1,7 @@
 package main
 
-import rl "vendor:raylib"
 import game "src"
+import rl "vendor:raylib"
 
 main :: proc() {
 	monitor := i32(0)
@@ -10,6 +10,7 @@ main :: proc() {
 
 	rl.SetConfigFlags({.MSAA_4X_HINT, .FULLSCREEN_MODE, .WINDOW_RESIZABLE})
 	rl.InitWindow(screen_w, screen_h, "nutri-slayer")
+	rl.InitAudioDevice()
 	rl.SetWindowMinSize(640, 360)
 	rl.SetTargetFPS(60)
 
@@ -18,6 +19,7 @@ main :: proc() {
 		settings = {target_fps = 60, resolution = .Monitor_Native},
 	}
 	game.apply_settings(&app.settings)
+	game.load_sounds()
 
 	for !rl.WindowShouldClose() && !app.request_quit {
 		dt := rl.GetFrameTime()
@@ -44,5 +46,7 @@ main :: proc() {
 		game.viewport_end_frame()
 	}
 
+	game.unload_sounds()
+	rl.CloseAudioDevice()
 	rl.CloseWindow()
 }

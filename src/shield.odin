@@ -37,6 +37,7 @@ spawn_shield_anim :: proc(state: ^Game_State, shield: i32) {
 }
 
 apply_shield :: proc(state: ^Game_State, anim: ^Shield_Anim) {
+	rl.PlaySound(SOUNDS["shield_gain"])
 	state.player.shield += anim.shield
 }
 

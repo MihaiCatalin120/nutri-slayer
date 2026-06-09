@@ -21,6 +21,7 @@ update_game :: proc(app: ^App_State, dt: f32) {
 
 	won := stage_won(state)
 	if won {
+		rl.PlaySound(SOUNDS["enemy_defeat"])
 		state.enemy = pick_enemy(state.stage)
 		state.stage += 1
 	}

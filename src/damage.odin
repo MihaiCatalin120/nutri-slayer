@@ -61,12 +61,15 @@ apply_damage :: proc(state: ^Game_State, anim: ^Damage_Anim) {
 	switch anim.target {
 	case .Enemy:
 		state.enemy.hp -= anim.damage
+		rl.PlaySound(SOUNDS["player_attack"])
 		if state.enemy.hp < 0 do state.enemy.hp = 0
 	case .Player:
 		anim.damage -= state.player.shield
 		state.player.shield = 0
 		if (anim.damage < 0) do anim.damage = 0
 		state.player.hp -= anim.damage
+		rl.PlaySound(SOUNDS["enemy_attack"])
+		if state.player.hp < state.player.max_hp / 4 do rl.PlaySound(SOUNDS["low_hp_warn"])
 		if state.player.hp < 0 do state.player.hp = 0
 	}
 }

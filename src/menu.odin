@@ -179,6 +179,7 @@ update_title :: proc(app: ^App_State) {
 	exit_y: i32 = 440
 
 	if menu_button_clicked(mx, my, btn_x, play_y, btn_w, btn_h) {
+		rl.PlaySound(SOUNDS["button_select"])
 		start_new_game(app)
 	}
 	if menu_button_clicked(mx, my, btn_x, options_y, btn_w, btn_h) {
@@ -265,13 +266,7 @@ draw_options :: proc(app: ^App_State) {
 	fps_text := fmt.bprintf(fps_buf[:], "%d FPS", app.settings.target_fps)
 	draw_setting_row("Max FPS", fps_text, 280, mx, my)
 
-	draw_setting_row(
-		"Resolution",
-		resolution_label(app.settings.resolution),
-		360,
-		mx,
-		my,
-	)
+	draw_setting_row("Resolution", resolution_label(app.settings.resolution), 360, mx, my)
 
 	btn_w: i32 = 200
 	btn_h: i32 = 44
