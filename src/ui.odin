@@ -60,14 +60,40 @@ draw_actor_sprite :: proc(x, y, size: i32, actor: ^Actor, is_player: bool) {
 	draw_text(icon, x + (size - iw) / 2, y + size / 2 - 24, 48, rl.WHITE)
 }
 
-draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor) {
+draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor, is_player: bool) {
 	rl.DrawRectangle(x, y, w, h, {30, 30, 38, 255})
 	rl.DrawRectangleLinesEx({f32(x), f32(y), f32(w), f32(h)}, 1, {60, 60, 75, 255})
 	rl.DrawText(actor.name, x + 8, y + 6, 14, {150, 150, 170, 255})
 
-    damage_buf: [32]u8
-    damage_text := fmt.bprintf(damage_buf[:], "Damage: %d", actor.damage)
-    draw_text(damage_text, x + 8, y + 28, 12, {100, 100, 115, 255})
+    text_buf: [32]u8
+    text := fmt.bprintf(text_buf[:], "Damage: %d (%.1f multiplier)", actor.damage, actor.multipliers.damage)
+    draw_text(text, x + 8, y + 28, 12, {100, 100, 115, 255})
+
+    if is_player {
+        text = fmt.bprintf(text_buf[:], "Shield: %d (%.1f multiplier)", actor.damage, actor.multipliers.shield)
+        draw_text(text, x + 8, y + 40, 12, {100, 100, 115, 255})
+
+        rl.DrawText("Extra multipliers", x + 8, y + 62, 12, {150, 150, 170, 255})
+
+        text = fmt.bprintf(text_buf[:], "Protein: %.1f", actor.multipliers.protein)
+        draw_text(text, x + 8, y + 74, 12, {100, 100, 115, 255})
+
+        text = fmt.bprintf(text_buf[:], "Carbohydrates: %.1f", actor.multipliers.carbohydrates)
+        draw_text(text, x + 8, y + 86, 12, {100, 100, 115, 255})
+
+        text = fmt.bprintf(text_buf[:], "Fiber: %.1f", actor.multipliers.fiber)
+        draw_text(text, x + 8, y + 98, 12, {100, 100, 115, 255})
+
+        text = fmt.bprintf(text_buf[:], "Unsaturated fat: %.1f", actor.multipliers.unsaturated_fat)
+        draw_text(text, x + 8, y + 110, 12, {100, 100, 115, 255})
+
+        text = fmt.bprintf(text_buf[:], "Saturated fat: %.1f", actor.multipliers.saturated_fat)
+        draw_text(text, x + 8, y + 122, 12, {100, 100, 115, 255})
+
+        text = fmt.bprintf(text_buf[:], "Sugar: %.1f", actor.multipliers.sugar)
+        draw_text(text, x + 8, y + 134, 12, {100, 100, 115, 255})
+
+    }
 }
 
 draw_hovered_block_info :: proc(state: ^Game_State, x, y, w, h: i32) {
@@ -250,12 +276,12 @@ draw_ui :: proc(state: ^Game_State) {
 	draw_actor_sprite(sx, 36, sprite_size, &state.player, true)
 	draw_hp_bar(16, 140, PANEL_W - 32, 22, state.player.hp, state.player.max_hp)
 	draw_shield(16, 140 - 22, PANEL_W - 32, 22, state.player.shield)
-	draw_stats(0, stats_y, PANEL_W, STATS_H, "Player stats / info", state.player)
+	draw_stats(0, stats_y, PANEL_W, STATS_H, "Player stats / info", state.player, true)
 	draw_hovered_block_info(state, 0, block_info_y, PANEL_W, BLOCK_INFO_H)
 
 	draw_actor_sprite(ex + sx, 36, sprite_size, &state.enemy, false)
 	draw_hp_bar(ex + 16, 140, PANEL_W - 32, 22, state.enemy.hp, state.enemy.max_hp)
-	draw_stats(ex, stats_y, PANEL_W, STATS_H, "Enemy stats", state.enemy)
+	draw_stats(ex, stats_y, PANEL_W, STATS_H, "Enemy stats", state.enemy, false)
 
 	counter_buf: [48]u8
 	counter_text := fmt.bprintf(

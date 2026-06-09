@@ -13,7 +13,10 @@ Block_Type :: enum u8 {
 	Sugar,
 }
 
+SHIELD_BLOCKS : [2]Block_Type = {Block_Type.Carbohydrates, Block_Type.Fiber}
+
 NUM_BLOCK_TYPES :: int(Block_Type.Sugar) + 1
+
 
 Block_Colors: [NUM_BLOCK_TYPES]rl.Color = {
 	{156, 23, 23, 255}, // protein
@@ -63,7 +66,7 @@ WINDOW_H: i32 : 720
 PANEL_W: i32 : 220
 SEARCH_H: i32 : 56
 HEADER_H: i32 : 200
-STATS_H: i32 : 80
+STATS_H: i32 : 180
 BLOCK_INFO_H: i32 : 100
 
 ARENA_X: i32 : 0
@@ -154,17 +157,29 @@ Board :: struct {
 	cells: [GRID_ROWS][GRID_COLS]Cell,
 }
 
+ExtraMultipliers :: struct {
+    damage:             f32,
+    shield:             f32,
+    protein:            f32,
+    carbohydrates:      f32,
+    fiber:              f32,
+    unsaturated_fat:    f32,
+    saturated_fat:      f32,
+    sugar:              f32,
+}
+
 Actor :: struct {
-	name:               cstring,
-	damage:             i32,
-	hp:                 i32,
-	max_hp:             i32,
-	shield:             i32,
-	turns_per_attack:   i32,
-	turns_until_attack: i32,
-	min_stage:          i32,
-	max_stage:          i32,
-	color:              rl.Color,
+    name:               cstring,
+    damage:             i32,
+    hp:                 i32,
+    max_hp:             i32,
+    shield:             i32,
+    turns_per_attack:   i32,
+    turns_until_attack: i32,
+    min_stage:          i32,
+    max_stage:          i32,
+    multipliers:        ExtraMultipliers,
+    color:              rl.Color,
 }
 
 Game_State :: struct {

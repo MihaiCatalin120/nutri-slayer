@@ -1,22 +1,49 @@
 package game
 
-BASE_ATTACK_DAMAGE :: 4
+import "core:slice"
 
-calc_attack_damage :: proc(block: Block_Type, pop_count: int) -> i32 {
-	mult := Block_Attack_Multiplier[block]
-	raw := f32(BASE_ATTACK_DAMAGE) * f32(pop_count) * mult
-	return i32(raw + 0.5)
+BASE_ATTACK_DAMAGE :: 4
+BASE_SHIELD :: 2
+
+calc_attack_damage :: proc(block: Block_Type, pop_count: int, player: Actor) -> i32 {
+	block_mult := Block_Attack_Multiplier[block]
+    #partial switch block {
+    case .Protein:
+        block_mult += player.multipliers.protein
+    case .Saturated_Fat:
+        block_mult += player.multipliers.saturated_fat
+    case .Unsaturated_Fat:
+        block_mult += player.multipliers.unsaturated_fat
+    case .Sugar:
+        block_mult += player.multipliers.sugar
+    }
+
+	raw := f32(BASE_ATTACK_DAMAGE) * f32(pop_count) * block_mult * player.multipliers.damage
+	return i32(raw)
+}
+
+calc_shield :: proc(block: Block_Type, pop_count: int, player: Actor) -> i32 {
+	block_mult := Block_Attack_Multiplier[block]
+    #partial switch block {
+    case .Carbohydrates:
+        block_mult += player.multipliers.carbohydrates
+    case .Fiber:
+        block_mult += player.multipliers.fiber
+    }
+
+	raw := f32(BASE_SHIELD) * f32(pop_count) * block_mult * player.multipliers.shield
+	return i32(raw)
 }
 
 player_action :: proc(state: ^Game_State, block: Block_Type, pop_count: int) {
-	damage := calc_attack_damage(block, pop_count)
-
-	#partial switch block {
-	case .Carbohydrates, .Fiber:
-		spawn_shield_anim(state, damage)
-	case:
-		spawn_damage_anim(state, damage, .Enemy)
-	}
+    should_shield := slice.contains(SHIELD_BLOCKS[:], block);
+    if should_shield {
+        shield := calc_shield(block, pop_count, state.player)
+        spawn_shield_anim(state, shield)
+    } else {
+        damage := calc_attack_damage(block, pop_count, state.player)
+        spawn_damage_anim(state, damage, .Enemy)
+    }
 
 	state.player_turns += 1
 	try_enemy_attack(state)
@@ -74,6 +101,16 @@ reset_game :: proc(state: ^Game_State) {
 		max_hp           = 100,
 		shield           = 0,
 		turns_per_attack = 0,
+        multipliers = {
+            damage           = 1.0,
+            shield           = 1.0,
+            protein          = 0.0,
+            carbohydrates    = 0.0,
+            fiber            = 0.0,
+            unsaturated_fat  = 0.0,
+            saturated_fat    = 0.0,
+            sugar            = 0.0,
+        },
 		color            = {60, 120, 200, 255},
 	}
 
