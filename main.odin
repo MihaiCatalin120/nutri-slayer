@@ -20,6 +20,7 @@ main :: proc() {
 	}
 	game.apply_settings(&app.settings)
 	game.load_sounds()
+	game.load_game_sprites()
 
 	for !rl.WindowShouldClose() && !app.request_quit {
 		dt := rl.GetFrameTime()
@@ -47,6 +48,7 @@ main :: proc() {
 	}
 
 	game.unload_sounds()
+	game.unload_game_sprites()
 	rl.CloseAudioDevice()
 	rl.CloseWindow()
 }

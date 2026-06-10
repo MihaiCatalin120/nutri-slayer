@@ -52,12 +52,22 @@ draw_shield :: proc(x, y, w, h, shield: i32) {
 }
 
 draw_actor_sprite :: proc(x, y, size: i32, actor: ^Actor, is_player: bool) {
-	rl.DrawRectangle(x, y, size, size, actor.color)
-	rl.DrawRectangleLinesEx({f32(x), f32(y), f32(size), f32(size)}, 2, rl.WHITE)
+	if is_player {
+		// texture := GAME_SPRITES["nutri-hero"]
+		// rl.DrawTexture(texture, x, y, rl.WHITE)
+		texture := GAME_SPRITES["nutri-hero"]
+		src := rl.Rectangle{0, 0, f32(texture.width), f32(texture.height)}
+		dst := rl.Rectangle{f32(x), f32(y), f32(size), f32(size)}
+		rl.DrawTexturePro(texture, src, dst, {0, 0}, 0, rl.WHITE)
+	} else {
+		rl.DrawRectangle(x, y, size, size, actor.color)
+		rl.DrawRectangleLinesEx({f32(x), f32(y), f32(size), f32(size)}, 2, rl.WHITE)
 
-	icon := is_player ? "P" : "E"
-	iw := rl.MeasureText(to_cstring(icon), 48)
-	draw_text(icon, x + (size - iw) / 2, y + size / 2 - 24, 48, rl.WHITE)
+		icon := is_player ? "P" : "E"
+		iw := rl.MeasureText(to_cstring(icon), 48)
+		draw_text(icon, x + (size - iw) / 2, y + size / 2 - 24, 48, rl.WHITE)
+	}
+
 }
 
 draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor, is_player: bool) {
@@ -65,35 +75,45 @@ draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor, is_player: boo
 	rl.DrawRectangleLinesEx({f32(x), f32(y), f32(w), f32(h)}, 1, {60, 60, 75, 255})
 	rl.DrawText(actor.name, x + 8, y + 6, 14, {150, 150, 170, 255})
 
-    text_buf: [32]u8
-    text := fmt.bprintf(text_buf[:], "Damage: %d (%.1f multiplier)", actor.damage, actor.multipliers.damage)
-    draw_text(text, x + 8, y + 28, 12, {100, 100, 115, 255})
+	text_buf: [32]u8
+	text := fmt.bprintf(
+		text_buf[:],
+		"Damage: %d (%.1f multiplier)",
+		actor.damage,
+		actor.multipliers.damage,
+	)
+	draw_text(text, x + 8, y + 28, 12, {100, 100, 115, 255})
 
-    if is_player {
-        text = fmt.bprintf(text_buf[:], "Shield: %d (%.1f multiplier)", actor.damage, actor.multipliers.shield)
-        draw_text(text, x + 8, y + 40, 12, {100, 100, 115, 255})
+	if is_player {
+		text = fmt.bprintf(
+			text_buf[:],
+			"Shield: %d (%.1f multiplier)",
+			actor.damage,
+			actor.multipliers.shield,
+		)
+		draw_text(text, x + 8, y + 40, 12, {100, 100, 115, 255})
 
-        rl.DrawText("Extra multipliers", x + 8, y + 62, 12, {150, 150, 170, 255})
+		rl.DrawText("Extra multipliers", x + 8, y + 62, 12, {150, 150, 170, 255})
 
-        text = fmt.bprintf(text_buf[:], "Protein: %.1f", actor.multipliers.protein)
-        draw_text(text, x + 8, y + 74, 12, {100, 100, 115, 255})
+		text = fmt.bprintf(text_buf[:], "Protein: %.1f", actor.multipliers.protein)
+		draw_text(text, x + 8, y + 74, 12, {100, 100, 115, 255})
 
-        text = fmt.bprintf(text_buf[:], "Carbohydrates: %.1f", actor.multipliers.carbohydrates)
-        draw_text(text, x + 8, y + 86, 12, {100, 100, 115, 255})
+		text = fmt.bprintf(text_buf[:], "Carbohydrates: %.1f", actor.multipliers.carbohydrates)
+		draw_text(text, x + 8, y + 86, 12, {100, 100, 115, 255})
 
-        text = fmt.bprintf(text_buf[:], "Fiber: %.1f", actor.multipliers.fiber)
-        draw_text(text, x + 8, y + 98, 12, {100, 100, 115, 255})
+		text = fmt.bprintf(text_buf[:], "Fiber: %.1f", actor.multipliers.fiber)
+		draw_text(text, x + 8, y + 98, 12, {100, 100, 115, 255})
 
-        text = fmt.bprintf(text_buf[:], "Unsaturated fat: %.1f", actor.multipliers.unsaturated_fat)
-        draw_text(text, x + 8, y + 110, 12, {100, 100, 115, 255})
+		text = fmt.bprintf(text_buf[:], "Unsaturated fat: %.1f", actor.multipliers.unsaturated_fat)
+		draw_text(text, x + 8, y + 110, 12, {100, 100, 115, 255})
 
-        text = fmt.bprintf(text_buf[:], "Saturated fat: %.1f", actor.multipliers.saturated_fat)
-        draw_text(text, x + 8, y + 122, 12, {100, 100, 115, 255})
+		text = fmt.bprintf(text_buf[:], "Saturated fat: %.1f", actor.multipliers.saturated_fat)
+		draw_text(text, x + 8, y + 122, 12, {100, 100, 115, 255})
 
-        text = fmt.bprintf(text_buf[:], "Sugar: %.1f", actor.multipliers.sugar)
-        draw_text(text, x + 8, y + 134, 12, {100, 100, 115, 255})
+		text = fmt.bprintf(text_buf[:], "Sugar: %.1f", actor.multipliers.sugar)
+		draw_text(text, x + 8, y + 134, 12, {100, 100, 115, 255})
 
-    }
+	}
 }
 
 draw_hovered_block_info :: proc(state: ^Game_State, x, y, w, h: i32) {
@@ -257,10 +277,10 @@ draw_board :: proc(state: ^Game_State) {
 }
 
 draw_current_stage :: proc(stage: int) {
-    stage_buf: [32]u8
-    stage_text := fmt.bprintf(stage_buf[:], "Stage %d", stage)
-    draw_text(stage_text, WINDOW_W / 2, 10, 32, rl.WHITE)
-} 
+	stage_buf: [32]u8
+	stage_text := fmt.bprintf(stage_buf[:], "Stage %d", stage)
+	draw_text(stage_text, WINDOW_W / 2, 10, 32, rl.WHITE)
+}
 
 draw_ui :: proc(state: ^Game_State) {
 	rl.ClearBackground({20, 20, 26, 255})
@@ -291,7 +311,7 @@ draw_ui :: proc(state: ^Game_State) {
 	)
 	draw_text(counter_text, ex + 8, 170, 12, {170, 130, 130, 255})
 
-    draw_current_stage(state.stage)
+	draw_current_stage(state.stage)
 
 	draw_board(state)
 
