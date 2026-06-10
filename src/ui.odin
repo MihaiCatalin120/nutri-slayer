@@ -53,8 +53,6 @@ draw_shield :: proc(x, y, w, h, shield: i32) {
 
 draw_actor_sprite :: proc(x, y, size: i32, actor: ^Actor, is_player: bool) {
 	if is_player {
-		// texture := GAME_SPRITES["nutri-hero"]
-		// rl.DrawTexture(texture, x, y, rl.WHITE)
 		texture := GAME_SPRITES["nutri-hero"]
 		src := rl.Rectangle{0, 0, f32(texture.width), f32(texture.height)}
 		dst := rl.Rectangle{f32(x), f32(y), f32(size), f32(size)}
