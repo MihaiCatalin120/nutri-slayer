@@ -79,6 +79,16 @@ flood_fill_group :: proc(
 	return count
 }
 
+valid_moves_available :: proc(board: ^Board) -> bool {
+    for col in 0 ..<GRID_COLS {
+        for row in 0 ..<GRID_ROWS {
+            if preview_group_size(board, col, row) > 1 do return true
+        }
+    }
+
+    return false
+}
+
 preview_group_size :: proc(board: ^Board, col, row: int) -> int {
 	if col < 0 || row < 0 do return 0
 	if !board.cells[row][col].active do return 0

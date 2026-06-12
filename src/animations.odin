@@ -152,6 +152,15 @@ update_animations :: proc(state: ^Game_State, dt: f32) {
 	}
 }
 
+pop_board :: proc(state: ^Game_State) {
+	for row in 0 ..< GRID_ROWS {
+		for col in 0 ..< GRID_COLS {
+			add_pop_anim(&state.anims, col, row, state.board.cells[row][col].block)
+			state.board.cells[row][col] = Cell{}
+		}
+	}
+}
+
 try_pop_group :: proc(state: ^Game_State, col, row: int) -> bool {
 	if anim_locked(state) do return false
 	if col < 0 || row < 0 || col >= GRID_COLS || row >= GRID_ROWS do return false

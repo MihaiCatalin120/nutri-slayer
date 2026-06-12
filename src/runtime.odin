@@ -59,4 +59,9 @@ update_game :: proc(app: ^App_State, dt: f32) {
 			}
 		}
 	}
+
+    if !anim_locked(state) && count_empty_cells(&state.board) == 0 && !valid_moves_available(&state.board) {
+        spawn_damage_anim(state, 50, .Player)
+        pop_board(state)
+    }
 }
