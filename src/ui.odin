@@ -76,8 +76,8 @@ draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor, is_player: boo
 	text_buf: [32]u8
 	text := fmt.bprintf(
 		text_buf[:],
-		"Damage: %d (%.1f multiplier)",
-		actor.damage,
+		"Damage: %.1f (x%.1f)",
+		f32(actor.damage) * actor.multipliers.damage,
 		actor.multipliers.damage,
 	)
 	draw_text(text, x + 8, y + 28, 12, {100, 100, 115, 255})
@@ -85,30 +85,34 @@ draw_stats :: proc(x, y, w, h: i32, title: cstring, actor: Actor, is_player: boo
 	if is_player {
 		text = fmt.bprintf(
 			text_buf[:],
-			"Shield: %d (%.1f multiplier)",
-			actor.damage,
+			"Shield: %.1f (x%.1f)",
+			BASE_SHIELD * actor.multipliers.shield,
 			actor.multipliers.shield,
 		)
 		draw_text(text, x + 8, y + 40, 12, {100, 100, 115, 255})
 
 		rl.DrawText("Extra multipliers", x + 8, y + 62, 12, {150, 150, 170, 255})
 
-		text = fmt.bprintf(text_buf[:], "Protein: %.1f", actor.multipliers.protein)
+		text = fmt.bprintf(text_buf[:], "Protein: x%.1f", actor.multipliers.protein)
 		draw_text(text, x + 8, y + 74, 12, {100, 100, 115, 255})
 
-		text = fmt.bprintf(text_buf[:], "Carbohydrates: %.1f", actor.multipliers.carbohydrates)
+		text = fmt.bprintf(text_buf[:], "Carbohydrates: x%.1f", actor.multipliers.carbohydrates)
 		draw_text(text, x + 8, y + 86, 12, {100, 100, 115, 255})
 
-		text = fmt.bprintf(text_buf[:], "Fiber: %.1f", actor.multipliers.fiber)
+		text = fmt.bprintf(text_buf[:], "Fiber: x%.1f", actor.multipliers.fiber)
 		draw_text(text, x + 8, y + 98, 12, {100, 100, 115, 255})
 
-		text = fmt.bprintf(text_buf[:], "Unsaturated fat: %.1f", actor.multipliers.unsaturated_fat)
+		text = fmt.bprintf(
+			text_buf[:],
+			"Unsaturated fat: x%.1f",
+			actor.multipliers.unsaturated_fat,
+		)
 		draw_text(text, x + 8, y + 110, 12, {100, 100, 115, 255})
 
-		text = fmt.bprintf(text_buf[:], "Saturated fat: %.1f", actor.multipliers.saturated_fat)
+		text = fmt.bprintf(text_buf[:], "Saturated fat: x%.1f", actor.multipliers.saturated_fat)
 		draw_text(text, x + 8, y + 122, 12, {100, 100, 115, 255})
 
-		text = fmt.bprintf(text_buf[:], "Sugar: %.1f", actor.multipliers.sugar)
+		text = fmt.bprintf(text_buf[:], "Sugar: x%.1f", actor.multipliers.sugar)
 		draw_text(text, x + 8, y + 134, 12, {100, 100, 115, 255})
 
 	}

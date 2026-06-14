@@ -7,16 +7,16 @@ BASE_SHIELD :: 2
 
 calc_attack_damage :: proc(block: Block_Type, pop_count: int, player: Actor) -> i32 {
 	block_mult := Block_Attack_Multiplier[block]
-    #partial switch block {
-    case .Protein:
-        block_mult += player.multipliers.protein
-    case .Saturated_Fat:
-        block_mult += player.multipliers.saturated_fat
-    case .Unsaturated_Fat:
-        block_mult += player.multipliers.unsaturated_fat
-    case .Sugar:
-        block_mult += player.multipliers.sugar
-    }
+	#partial switch block {
+	case .Protein:
+		block_mult += player.multipliers.protein
+	case .Saturated_Fat:
+		block_mult += player.multipliers.saturated_fat
+	case .Unsaturated_Fat:
+		block_mult += player.multipliers.unsaturated_fat
+	case .Sugar:
+		block_mult += player.multipliers.sugar
+	}
 
 	raw := f32(BASE_ATTACK_DAMAGE) * f32(pop_count) * block_mult * player.multipliers.damage
 	return i32(raw)
@@ -24,26 +24,26 @@ calc_attack_damage :: proc(block: Block_Type, pop_count: int, player: Actor) -> 
 
 calc_shield :: proc(block: Block_Type, pop_count: int, player: Actor) -> i32 {
 	block_mult := Block_Attack_Multiplier[block]
-    #partial switch block {
-    case .Carbohydrates:
-        block_mult += player.multipliers.carbohydrates
-    case .Fiber:
-        block_mult += player.multipliers.fiber
-    }
+	#partial switch block {
+	case .Carbohydrates:
+		block_mult += player.multipliers.carbohydrates
+	case .Fiber:
+		block_mult += player.multipliers.fiber
+	}
 
 	raw := f32(BASE_SHIELD) * f32(pop_count) * block_mult * player.multipliers.shield
 	return i32(raw)
 }
 
 player_action :: proc(state: ^Game_State, block: Block_Type, pop_count: int) {
-    should_shield := slice.contains(SHIELD_BLOCKS[:], block);
-    if should_shield {
-        shield := calc_shield(block, pop_count, state.player)
-        spawn_shield_anim(state, shield)
-    } else {
-        damage := calc_attack_damage(block, pop_count, state.player)
-        spawn_damage_anim(state, damage, .Enemy)
-    }
+	should_shield := slice.contains(SHIELD_BLOCKS[:], block)
+	if should_shield {
+		shield := calc_shield(block, pop_count, state.player)
+		spawn_shield_anim(state, shield)
+	} else {
+		damage := calc_attack_damage(block, pop_count, state.player)
+		spawn_damage_anim(state, damage, .Enemy)
+	}
 
 	state.player_turns += 1
 	try_enemy_attack(state)
@@ -68,50 +68,51 @@ game_is_over :: proc(state: ^Game_State) -> (over: bool) {
 }
 
 enemy_valid_for_stage :: proc(enemy: Actor, stage: int) -> bool {
-    if enemy.max_stage == 0 {
-        return i32(stage) >= enemy.min_stage
-    }
-    return i32(stage) >= enemy.min_stage && i32(stage) <= enemy.max_stage
+	if enemy.max_stage == 0 {
+		return i32(stage) >= enemy.min_stage
+	}
+	return i32(stage) >= enemy.min_stage && i32(stage) <= enemy.max_stage
 }
 
 pick_enemy :: proc(stage: int) -> Actor {
-    valid := make([dynamic]Actor)
+	valid := make([dynamic]Actor)
 
-    for enemy in ENEMY_DATABASE {
-        if enemy_valid_for_stage(enemy, stage) {
-            append(&valid, enemy)
-        }
-    }
+	for enemy in ENEMY_DATABASE {
+		if enemy_valid_for_stage(enemy, stage) {
+			append(&valid, enemy)
+		}
+	}
 
-    assert(len(valid) > 0)
-    result: Actor = valid[random_int_between(0, i32(len(valid) - 1))]
-    result.damage += i32(f32(result.damage * (i32(stage) - 1)) * STAGE_DAMAGE_MULTIPLIER)
-    result.max_hp += i32(f32(result.max_hp * (i32(stage) - 1)) * STAGE_HP_MULTIPLIER)
-    result.hp = result.max_hp
-    delete(valid)
-    return result
+	assert(len(valid) > 0)
+	result: Actor = valid[random_int_between(0, i32(len(valid) - 1))]
+	result.damage += i32(f32(result.damage * (i32(stage) - 1)) * STAGE_DAMAGE_MULTIPLIER)
+	result.max_hp += i32(f32(result.max_hp * (i32(stage) - 1)) * STAGE_HP_MULTIPLIER)
+	result.hp = result.max_hp
+	result.multipliers.damage = 1.0
+	delete(valid)
+	return result
 }
 
 reset_game :: proc(state: ^Game_State) {
 	board_init(&state.board)
 	state.player = Actor {
-		name             = "Player",
-        damage           = BASE_ATTACK_DAMAGE,
-		hp               = 100,
-		max_hp           = 100,
-		shield           = 0,
+		name = "Player",
+		damage = BASE_ATTACK_DAMAGE,
+		hp = 100,
+		max_hp = 100,
+		shield = 0,
 		turns_per_attack = 0,
-        multipliers = {
-            damage           = 1.0,
-            shield           = 1.0,
-            protein          = 0.0,
-            carbohydrates    = 0.0,
-            fiber            = 0.0,
-            unsaturated_fat  = 0.0,
-            saturated_fat    = 0.0,
-            sugar            = 0.0,
-        },
-		color            = {60, 120, 200, 255},
+		multipliers = {
+			damage = 1.0,
+			shield = 1.0,
+			protein = 0.0,
+			carbohydrates = 0.0,
+			fiber = 0.0,
+			unsaturated_fat = 0.0,
+			saturated_fat = 0.0,
+			sugar = 0.0,
+		},
+		color = {60, 120, 200, 255},
 	}
 
 	state.player_turns = 0
