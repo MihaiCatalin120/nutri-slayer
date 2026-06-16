@@ -16,7 +16,7 @@ main :: proc() {
 
 	app := game.App_State {
 		screen = .Title,
-		settings = {target_fps = 60, resolution = .Monitor_Native},
+		settings = {target_fps = 60, resolution = .Monitor_Native, sfx_volume = 0.5},
 	}
 	game.apply_settings(&app.settings)
 	game.load_sounds()

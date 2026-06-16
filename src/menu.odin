@@ -22,6 +22,7 @@ FPS_OPTIONS: [3]i32 = {30, 60, 120}
 Settings :: struct {
 	target_fps: i32,
 	resolution: Resolution_Preset,
+    sfx_volume: f16,
 }
 
 App_State :: struct {
@@ -137,7 +138,20 @@ setting_row_input :: proc(y: i32, mx, my: i32) -> (prev, next: bool) {
 	return
 }
 
-draw_setting_row :: proc(label: string, value: string, y: i32, mx, my: i32) {
+set_all_sfx_volume :: proc(value: ^f16) {
+    for i in 0 ..< len(available_sounds) do rl.SetSoundVolume(SOUNDS[available_sounds[i]], f32(value^))
+}
+
+set_slider_input :: proc(y: i32, mx, my: i32, value: ^f16) {
+    slider_hover := menu_button_hovered(mx, my, SETTING_ROW_X, y, SETTING_ROW_W, SETTING_ROW_H)
+    if rl.IsMouseButtonDown(.LEFT) && slider_hover {
+        value^ = f16((mx - SETTING_ROW_X)) / f16(SETTING_ROW_W)
+        set_all_sfx_volume(value)
+    }
+    return
+}
+
+draw_setting_row :: proc(label: string, value: string, y: i32, mx, my: i32, settings: Settings) {
 	row_x := SETTING_ROW_X
 	row_w := SETTING_ROW_W
 	row_h := SETTING_ROW_H
@@ -151,15 +165,20 @@ draw_setting_row :: proc(label: string, value: string, y: i32, mx, my: i32) {
 	tw := rl.MeasureText(to_cstring(value), 20)
 	draw_text(value, row_x + (row_w - tw) / 2, y + 14, 20, rl.WHITE)
 
-	prev_x := row_x
-	next_x := row_x + row_w - arrow_w
-	prev_hover := menu_button_hovered(mx, my, prev_x, y, arrow_w, row_h)
-	next_hover := menu_button_hovered(mx, my, next_x, y, arrow_w, row_h)
+    if label == "SFX Volume" {
+        rl.DrawRectangle(SETTING_ROW_X, y, i32(f16(SETTING_ROW_W) * settings.sfx_volume), SETTING_ROW_H, {0, 255, 0, 30})
+    } else {
+        prev_x := row_x
+        next_x := row_x + row_w - arrow_w
+        prev_hover := menu_button_hovered(mx, my, prev_x, y, arrow_w, row_h)
+        next_hover := menu_button_hovered(mx, my, next_x, y, arrow_w, row_h)
 
-	prev_color := prev_hover ? rl.Color{100, 100, 120, 255} : rl.Color{70, 70, 85, 255}
-	next_color := next_hover ? rl.Color{100, 100, 120, 255} : rl.Color{70, 70, 85, 255}
-	draw_text("<", prev_x + 16, y + 12, 24, prev_color)
-	draw_text(">", next_x + 16, y + 12, 24, next_color)
+        prev_color := prev_hover ? rl.Color{100, 100, 120, 255} : rl.Color{70, 70, 85, 255}
+        next_color := next_hover ? rl.Color{100, 100, 120, 255} : rl.Color{70, 70, 85, 255}
+
+        draw_text(">", next_x + 16, y + 12, 24, next_color)
+        draw_text("<", prev_x + 16, y + 12, 24, prev_color)
+    }
 }
 
 start_new_game :: proc(app: ^App_State) {
@@ -244,10 +263,12 @@ update_options :: proc(app: ^App_State) {
 	if res_prev do cycle_resolution(&app.settings, -1)
 	if res_next do cycle_resolution(&app.settings, 1)
 
+    set_slider_input(440, mx, my, &app.settings.sfx_volume)
+
 	btn_w: i32 = 200
 	btn_h: i32 = 44
 	btn_x := (WINDOW_W - btn_w) / 2
-	back_y: i32 = 480
+	back_y: i32 = 560
 	if menu_button_clicked(mx, my, btn_x, back_y, btn_w, btn_h) {
 		app.screen = .Title
 	}
@@ -262,11 +283,14 @@ draw_options :: proc(app: ^App_State) {
 
 	mx, my := viewport_mouse()
 
-	fps_buf: [16]u8
-	fps_text := fmt.bprintf(fps_buf[:], "%d FPS", app.settings.target_fps)
-	draw_setting_row("Max FPS", fps_text, 280, mx, my)
+	buf: [16]u8
+	text := fmt.bprintf(buf[:], "%d FPS", app.settings.target_fps)
+	draw_setting_row("Max FPS", text, 280, mx, my, app.settings)
 
-	draw_setting_row("Resolution", resolution_label(app.settings.resolution), 360, mx, my)
+	draw_setting_row("Resolution", resolution_label(app.settings.resolution), 360, mx, my, app.settings)
+
+    text = fmt.bprintf(buf[:], "%d%%", i8(app.settings.sfx_volume * 100))
+	draw_setting_row("SFX Volume", text, 440, mx, my, app.settings)
 
 	btn_w: i32 = 200
 	btn_h: i32 = 44
@@ -274,9 +298,9 @@ draw_options :: proc(app: ^App_State) {
 	draw_menu_button(
 		"Back",
 		btn_x,
-		480,
+		560,
 		btn_w,
 		btn_h,
-		menu_button_hovered(mx, my, btn_x, 480, btn_w, btn_h),
+		menu_button_hovered(mx, my, btn_x, 560, btn_w, btn_h),
 	)
 }
