@@ -72,6 +72,8 @@ apply_settings :: proc(settings: ^Settings) {
 	case .R_2560x1440:
 		set_windowed_size(2560, 1440)
 	}
+
+    set_all_sfx_volume(&settings.sfx_volume)
 }
 
 set_windowed_size :: proc(w, h: i32) {
