@@ -12,6 +12,11 @@ update_game :: proc(app: ^App_State, dt: f32) {
 	update_damage_anims(state, dt)
 	update_shield_anims(state, dt)
 
+	if rl.IsKeyPressed(.ESCAPE) {
+		app.screen = .Title
+		return
+	}
+
 	if game_is_over(state) {
 		if rl.IsKeyPressed(.R) {
 			app.screen = .Title

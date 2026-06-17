@@ -13,6 +13,7 @@ main :: proc() {
 	rl.InitAudioDevice()
 	rl.SetWindowMinSize(640, 360)
 	rl.SetTargetFPS(60)
+    rl.SetExitKey(.KEY_NULL)
 
 	app := game.App_State {
 		screen = .Title,

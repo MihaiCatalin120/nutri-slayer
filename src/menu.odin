@@ -206,9 +206,10 @@ update_title :: proc(app: ^App_State) {
 	if menu_button_clicked(mx, my, btn_x, options_y, btn_w, btn_h) {
 		app.screen = .Options
 	}
-	if menu_button_clicked(mx, my, btn_x, exit_y, btn_w, btn_h) {
+	if menu_button_clicked(mx, my, btn_x, exit_y, btn_w, btn_h) || rl.IsKeyPressed(.ESCAPE) {
 		app.request_quit = true
 	}
+
 }
 
 draw_title :: proc() {
@@ -224,7 +225,7 @@ draw_title :: proc() {
 	btn_x := (WINDOW_W - btn_w) / 2
 
 	draw_menu_button(
-		"Play",
+		"New Game",
 		btn_x,
 		300,
 		btn_w,
