@@ -15,14 +15,19 @@ main :: proc() {
 	rl.SetTargetFPS(60)
     rl.SetExitKey(.KEY_NULL)
 
+    //TODO(mihai): maybe group settings code
 	app := game.App_State {
 		screen = .Title,
 		settings = {target_fps = 60, resolution = .Monitor_Native, sfx_volume = 0.5},
 	}
+    game.load_settings(&app.settings)
 	game.apply_settings(&app.settings)
+
 	game.load_sounds()
 	game.load_game_sprites()
-    game.load_settings()
+
+    //TODO(mihai): add logging and memory debug info - see https://zylinski.se/posts/introduction-to-odin/#using-the-logger
+    // and https://zylinski.se/posts/introduction-to-odin/#getting-comfy-with-manual-memory-management
 
 	for !rl.WindowShouldClose() && !app.request_quit {
 		dt := rl.GetFrameTime()

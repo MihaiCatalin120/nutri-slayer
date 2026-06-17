@@ -3,6 +3,7 @@ package game
 import "core:fmt"
 import rl "vendor:raylib"
 import ini "core:encoding/ini"
+import strconv "core:strconv"
 
 App_Screen :: enum {
 	Title,
@@ -81,7 +82,7 @@ save_settings :: proc() {
     //TODO(mihai): implement
 }
 
-load_settings :: proc() {
+load_settings :: proc(settings: ^Settings) {
     if config, _, ok := ini.load_map_from_path(
         string(rl.TextFormat(
             "%s%s",
@@ -90,9 +91,14 @@ load_settings :: proc() {
         )),
         context.allocator
     ); ok {
-        settings := config["settings"]
-        fmt.println("DEBUG: Settings loaded!")
-        fmt.println("DEBUG: fps %d, resolution %s, sfx %.1f", settings["target_fps"], settings["resolution"], settings["sfx_volume"])
+        config_settings := config["settings"]
+        fmt.println("DEBUG: fps %d, resolution %s, sfx %.1f", config_settings["target_fps"], config_settings["resolution"], config_settings["sfx_volume"])
+
+        if n, ok := strconv.parse_int(config_settings["target_fps"], base = 10); ok do settings.target_fps = i32(n)
+
+        //TODO(mihai): think about the resolution config storage type
+        // Does it need to be the same as the stored value (0,1..n) or by its description/name (native, 1920x1080)?
+        if n, ok := strconv.parse_f32(config_settings["sfx_volume"]); ok do settings.sfx_volume = f16(n)
     }
 }
 
