@@ -2,6 +2,7 @@ package game
 
 import "core:fmt"
 import rl "vendor:raylib"
+import ini "core:encoding/ini"
 
 App_Screen :: enum {
 	Title,
@@ -74,6 +75,25 @@ apply_settings :: proc(settings: ^Settings) {
 	}
 
     set_all_sfx_volume(&settings.sfx_volume)
+}
+
+save_settings :: proc() {
+    //TODO(mihai): implement
+}
+
+load_settings :: proc() {
+    if config, _, ok := ini.load_map_from_path(
+        string(rl.TextFormat(
+            "%s%s",
+            rl.GetApplicationDirectory(),
+            "options.ini",
+        )),
+        context.allocator
+    ); ok {
+        settings := config["settings"]
+        fmt.println("DEBUG: Settings loaded!")
+        fmt.println("DEBUG: fps %d, resolution %s, sfx %.1f", settings["target_fps"], settings["resolution"], settings["sfx_volume"])
+    }
 }
 
 set_windowed_size :: proc(w, h: i32) {

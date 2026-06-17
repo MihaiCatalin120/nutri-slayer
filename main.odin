@@ -22,6 +22,7 @@ main :: proc() {
 	game.apply_settings(&app.settings)
 	game.load_sounds()
 	game.load_game_sprites()
+    game.load_settings()
 
 	for !rl.WindowShouldClose() && !app.request_quit {
 		dt := rl.GetFrameTime()
