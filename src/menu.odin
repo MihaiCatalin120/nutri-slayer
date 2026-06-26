@@ -78,8 +78,36 @@ apply_settings :: proc(settings: ^Settings) {
     set_all_sfx_volume(&settings.sfx_volume)
 }
 
-save_settings :: proc() {
-    //TODO(mihai): implement
+save_settings :: proc(settings: Settings) {
+    //TODO(mihai): use and test
+    config := make(ini.Map)
+    defer {
+        for _, section_map in config {
+            delete(section_map)
+        }
+        delete(config)
+    }
+
+    config["settings"] = make(map[string]string)
+    config_settings := config["settings"]
+
+    buf: [4]byte
+    config_settings["target_fps"] = strconv.write_int(buf[:], i64(settings.target_fps), 10)
+
+    switch settings.resolution {
+    case .Monitor_Native:
+        config_settings["resolution"] = "native"
+    case .R_1280x720:
+        config_settings["resolution"] = "1280x720"
+    case .R_1600x900:
+        config_settings["resolution"] = "1600x900"
+    case .R_1920x1080:
+        config_settings["resolution"] = "1920x1080"
+    case .R_2560x1440:
+        config_settings["resolution"] = "2560x1440"
+    }
+
+    config_settings["sfx_volume"] = strconv.write_float(buf[:], f64(settings.sfx_volume), 'f', 2, 64)
 }
 
 load_settings :: proc(settings: ^Settings) {
@@ -92,12 +120,24 @@ load_settings :: proc(settings: ^Settings) {
         context.allocator
     ); ok {
         config_settings := config["settings"]
-        fmt.println("DEBUG: fps %d, resolution %s, sfx %.1f", config_settings["target_fps"], config_settings["resolution"], config_settings["sfx_volume"])
 
         if n, ok := strconv.parse_int(config_settings["target_fps"], base = 10); ok do settings.target_fps = i32(n)
 
-        //TODO(mihai): think about the resolution config storage type
-        // Does it need to be the same as the stored value (0,1..n) or by its description/name (native, 1920x1080)?
+        switch config_settings["resolution"] {
+        case "native":
+            settings.resolution = Resolution_Preset.Monitor_Native
+        case "1280x720":
+            settings.resolution = Resolution_Preset.R_1280x720
+        case "1600x900":
+            settings.resolution = Resolution_Preset.R_1600x900
+        case "1920x1080":
+            settings.resolution = Resolution_Preset.R_1920x1080
+        case "2560x1440":
+            settings.resolution = Resolution_Preset.R_2560x1440
+        case:
+            fmt.println("ERROR: Unsupported config resolution; Defaulting to native")
+            settings.resolution = Resolution_Preset.Monitor_Native
+        }
         if n, ok := strconv.parse_f32(config_settings["sfx_volume"]); ok do settings.sfx_volume = f16(n)
     }
 }
