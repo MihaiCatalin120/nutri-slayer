@@ -4,6 +4,7 @@ import "core:fmt"
 import rl "vendor:raylib"
 import ini "core:encoding/ini"
 import strconv "core:strconv"
+import os "core:os"
 
 App_Screen :: enum {
 	Title,
@@ -76,23 +77,16 @@ apply_settings :: proc(settings: ^Settings) {
 	}
 
     set_all_sfx_volume(&settings.sfx_volume)
+    save_settings(settings^)
 }
 
 save_settings :: proc(settings: Settings) {
-    //TODO(mihai): use and test
-    config := make(ini.Map)
-    defer {
-        for _, section_map in config {
-            delete(section_map)
-        }
-        delete(config)
-    }
+    config := make(ini.Map, context.temp_allocator)
 
-    config["settings"] = make(map[string]string)
+    config["settings"] = make(map[string]string, context.temp_allocator)
     config_settings := config["settings"]
 
-    buf: [4]byte
-    config_settings["target_fps"] = strconv.write_int(buf[:], i64(settings.target_fps), 10)
+    config_settings["target_fps"] = fmt.tprintf("%d", settings.target_fps)
 
     switch settings.resolution {
     case .Monitor_Native:
@@ -107,7 +101,24 @@ save_settings :: proc(settings: Settings) {
         config_settings["resolution"] = "2560x1440"
     }
 
-    config_settings["sfx_volume"] = strconv.write_float(buf[:], f64(settings.sfx_volume), 'f', 2, 64)
+    config_settings["sfx_volume"] = fmt.tprintf("%.2f", settings.sfx_volume)
+    config["settings"] = config_settings
+
+    appPath := rl.GetApplicationDirectory()
+
+    handle, err := os.open(string(rl.TextFormat("%s%s", appPath, "options.ini")), os.O_WRONLY | os.O_CREATE | os.O_TRUNC)
+    if err != os.ERROR_NONE {
+        fmt.eprintln("Error while opening config file for writing:", err)
+        return;
+    }
+    defer os.close(handle)
+
+    bytes_number, write_err := ini.write_map(os.to_stream(handle), config)
+    if write_err != nil {
+        fmt.eprintln("Error while writing config file:", write_err)
+    } else {
+        fmt.println("DEBUG: Write config file success! %d", bytes_number)
+    }
 }
 
 load_settings :: proc(settings: ^Settings) {
@@ -164,7 +175,7 @@ next_resolution :: proc(current: Resolution_Preset, delta: int) -> Resolution_Pr
 
 cycle_fps :: proc(settings: ^Settings, delta: int) {
 	settings.target_fps = next_fps(settings.target_fps, delta)
-	rl.SetTargetFPS(settings.target_fps)
+	apply_settings(settings)
 }
 
 cycle_resolution :: proc(settings: ^Settings, delta: int) {
@@ -210,11 +221,11 @@ set_all_sfx_volume :: proc(value: ^f16) {
     for i in 0 ..< len(available_sounds) do rl.SetSoundVolume(SOUNDS[available_sounds[i]], f32(value^))
 }
 
-set_slider_input :: proc(y: i32, mx, my: i32, value: ^f16) {
+set_slider_input :: proc(y: i32, mx, my: i32, settings: ^Settings) {
     slider_hover := menu_button_hovered(mx, my, SETTING_ROW_X, y, SETTING_ROW_W, SETTING_ROW_H)
     if rl.IsMouseButtonDown(.LEFT) && slider_hover {
-        value^ = f16((mx - SETTING_ROW_X)) / f16(SETTING_ROW_W)
-        set_all_sfx_volume(value)
+        settings^.sfx_volume = f16((mx - SETTING_ROW_X)) / f16(SETTING_ROW_W)
+        apply_settings(settings)
     }
     return
 }
@@ -332,7 +343,7 @@ update_options :: proc(app: ^App_State) {
 	if res_prev do cycle_resolution(&app.settings, -1)
 	if res_next do cycle_resolution(&app.settings, 1)
 
-    set_slider_input(440, mx, my, &app.settings.sfx_volume)
+    set_slider_input(440, mx, my, &app.settings)
 
 	btn_w: i32 = 200
 	btn_h: i32 = 44
