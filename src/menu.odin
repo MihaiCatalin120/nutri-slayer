@@ -20,11 +20,18 @@ Resolution_Preset :: enum {
 	R_2560x1440,
 }
 
+Window_Type :: enum {
+    Fullscreen,
+    Windowed,
+    Borderless,
+}
+
 FPS_OPTIONS: [3]i32 = {30, 60, 120}
 
 Settings :: struct {
 	target_fps: i32,
 	resolution: Resolution_Preset,
+    window_type: Window_Type,
     sfx_volume: f16,
 }
 
@@ -51,6 +58,18 @@ resolution_label :: proc(preset: Resolution_Preset) -> string {
 	return "Unknown"
 }
 
+window_type_label :: proc(preset: Window_Type) -> string {
+	switch preset {
+	case .Fullscreen:
+		return "Fullscreen"
+	case .Windowed:
+		return "Windowed"
+	case .Borderless:
+		return "Borderless"
+	}
+	return "Unknown"
+}
+
 fps_option_index :: proc(fps: i32) -> int {
 	for i in 0 ..< len(FPS_OPTIONS) {
 		if FPS_OPTIONS[i] == fps do return i
@@ -66,15 +85,28 @@ apply_settings :: proc(settings: ^Settings) {
 		if !rl.IsWindowFullscreen() {
 			rl.ToggleFullscreen()
 		}
+        rl.SetWindowSize(
+            rl.GetMonitorWidth(rl.GetCurrentMonitor()),
+            rl.GetMonitorHeight(rl.GetCurrentMonitor())
+        )
 	case .R_1280x720:
-		set_windowed_size(1280, 720)
+        rl.SetWindowSize(1280, 720)
 	case .R_1600x900:
-		set_windowed_size(1600, 900)
+        rl.SetWindowSize(1600, 900)
 	case .R_1920x1080:
-		set_windowed_size(1920, 1080)
+        rl.SetWindowSize(1920, 1080)
 	case .R_2560x1440:
-		set_windowed_size(2560, 1440)
+        rl.SetWindowSize(2560, 1440)
 	}
+
+    switch settings.window_type {
+    case .Fullscreen:
+		if !rl.IsWindowFullscreen() do rl.ToggleFullscreen()
+    case .Windowed:
+        if rl.IsWindowFullscreen() do rl.ToggleFullscreen()
+    case .Borderless:
+        rl.ToggleBorderlessWindowed()
+    }
 
     set_all_sfx_volume(&settings.sfx_volume)
     save_settings(settings^)
@@ -99,6 +131,15 @@ save_settings :: proc(settings: Settings) {
         config_settings["resolution"] = "1920x1080"
     case .R_2560x1440:
         config_settings["resolution"] = "2560x1440"
+    }
+
+    switch settings.window_type {
+    case .Fullscreen:
+	    config_settings["window_type"] = "fullscreen"
+    case .Windowed:
+	    config_settings["window_type"] = "windowed"
+    case .Borderless:
+	    config_settings["window_type"] = "borderless"
     }
 
     config_settings["sfx_volume"] = fmt.tprintf("%.2f", settings.sfx_volume)
@@ -149,15 +190,18 @@ load_settings :: proc(settings: ^Settings) {
             fmt.println("ERROR: Unsupported config resolution; Defaulting to native")
             settings.resolution = Resolution_Preset.Monitor_Native
         }
+
+        switch config_settings["window_type"] {
+        case "fullscreen":
+            settings.window_type = Window_Type.Fullscreen
+        case "windowed":
+            settings.window_type = Window_Type.Windowed
+        case "borderless":
+            settings.window_type = Window_Type.Borderless
+        }
+
         if n, ok := strconv.parse_f32(config_settings["sfx_volume"]); ok do settings.sfx_volume = f16(n)
     }
-}
-
-set_windowed_size :: proc(w, h: i32) {
-	if rl.IsWindowFullscreen() {
-		rl.ToggleFullscreen()
-	}
-	rl.SetWindowSize(w, h)
 }
 
 next_fps :: proc(current: i32, delta: int) -> i32 {
@@ -173,6 +217,12 @@ next_resolution :: proc(current: Resolution_Preset, delta: int) -> Resolution_Pr
 	return Resolution_Preset((preset + i32(delta) + count) % count)
 }
 
+next_window_type :: proc(current: Window_Type, delta: int) -> Window_Type {
+	preset := i32(current)
+	count := i32(Window_Type.Borderless) + 1
+	return Window_Type((preset + i32(delta) + count) % count)
+}
+
 cycle_fps :: proc(settings: ^Settings, delta: int) {
 	settings.target_fps = next_fps(settings.target_fps, delta)
 	apply_settings(settings)
@@ -180,6 +230,11 @@ cycle_fps :: proc(settings: ^Settings, delta: int) {
 
 cycle_resolution :: proc(settings: ^Settings, delta: int) {
 	settings.resolution = next_resolution(settings.resolution, delta)
+	apply_settings(settings)
+}
+
+cycle_window_type :: proc(settings: ^Settings, delta: int) {
+	settings.window_type = next_window_type(settings.window_type, delta)
 	apply_settings(settings)
 }
 
@@ -335,13 +390,17 @@ update_options :: proc(app: ^App_State) {
 		return
 	}
 
-	prev, next := setting_row_input(280, mx, my)
+	prev, next := setting_row_input(200, mx, my)
 	if prev do cycle_fps(&app.settings, -1)
 	if next do cycle_fps(&app.settings, 1)
 
-	res_prev, res_next := setting_row_input(360, mx, my)
+	res_prev, res_next := setting_row_input(280, mx, my)
 	if res_prev do cycle_resolution(&app.settings, -1)
 	if res_next do cycle_resolution(&app.settings, 1)
+
+	window_type_prev, window_type_next := setting_row_input(360, mx, my)
+	if window_type_prev do cycle_window_type(&app.settings, -1)
+	if window_type_next do cycle_window_type(&app.settings, 1)
 
     set_slider_input(440, mx, my, &app.settings)
 
@@ -365,9 +424,11 @@ draw_options :: proc(app: ^App_State) {
 
 	buf: [16]u8
 	text := fmt.bprintf(buf[:], "%d FPS", app.settings.target_fps)
-	draw_setting_row("Max FPS", text, 280, mx, my, app.settings)
+	draw_setting_row("Max FPS", text, 200, mx, my, app.settings)
 
-	draw_setting_row("Resolution", resolution_label(app.settings.resolution), 360, mx, my, app.settings)
+	draw_setting_row("Resolution", resolution_label(app.settings.resolution), 280, mx, my, app.settings)
+
+	draw_setting_row("Window Type", window_type_label(app.settings.window_type), 360, mx, my, app.settings)
 
     text = fmt.bprintf(buf[:], "%d%%", i8(app.settings.sfx_volume * 100))
 	draw_setting_row("SFX Volume", text, 440, mx, my, app.settings)
